@@ -19,6 +19,18 @@
 - Added coarse-pointer touch target refinements and reduced mobile blur.
 - Added visibility pause safeguards for long-running shooter/snack loops.
 
+## 1.5.2 — Gameplay depth pass
+
+- Added strategic Connect Four search, Othello corner-aware AI and Chess AI.
+- Added Chess king safety, castling and en-passant handling.
+- Added Pool opponent aiming, Darts swipe throws/modes/opponent, and football shooting AI.
+- Added manual Battleships fleet placement with rotation and hunt/target AI.
+- Added Frustration, Guess Who and Property Empire opponent layers.
+- Replaced Operation random success with precision checks.
+- Added support-aware KerPlunk drops and Mouse Trap trigger animation.
+- Added Shooting Gallery ammo, reload, accuracy and stage feedback.
+- Browser-tested all 20 rooms after the pass with zero console errors.
+
 ## Remaining v1 backlog
 
 The 20-room brief is larger than a single safe greenfield pass. The remaining rooms are registered and routed through the shared shell; their deeper rules, AI and physics should be implemented room-by-room next, with Pool/Bowling/Darts/Football/Snack World as the current priority vertical slice.
