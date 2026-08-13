@@ -748,6 +748,9 @@ let frAI=false;
 const frAdvanceOriginal=advanceF;
 advanceF=function(extra){frAdvanceOriginal(extra);if(frAI&&frTurn!==0&&frRoll===null)setTimeout(frAiTurn,420)};
 function frAiTurn(){if(!frAI||frTurn===0||frRoll!==null)return;rollDice();setTimeout(()=>{if(!frAI||frTurn===0||frRoll===null)return;let choices=frPawns.map((p,i)=>({p,i})).filter(x=>x.p.player===frTurn&&canF(x.p)).sort((a,b)=>(b.p.pos<0?999:b.p.pos)-(a.p.pos<0?999:a.p.pos));if(choices[0])moveF(choices[0].i)},360)}
+/* OPERATION SKILL PASS: success comes from pointer precision, not a random roll. */
+operate=function(i,e){if(opDone.has(i)||opLives<=0)return;let cavity=document.querySelectorAll('#opCavities .cavity')[i],rect=cavity?.getBoundingClientRect(),cx=rect?rect.left+rect.width/2:0,cy=rect?rect.top+rect.height/2:0,precision=e?Math.max(0,1-Math.hypot(e.clientX-cx,e.clientY-cy)/(rect.width*.7)):0;let difficulty=ailments[i][4];if(precision>=difficulty*.72){opDone.add(i);opScore+=Math.round(80+precision*120);beep(700,.08);toast(ailments[i][1]+' removed with steady hands!')}else{opLives--;beep(130,.25);toast('BUZZ! Aim for the centre of the ailment.')}renderOp();opStat();if(opDone.size===ailments.length)return modal('Patient survives! ðŸ©º',`Score: ${opScore}`,[['Again',()=>{closeModal();resetOp()}]]);if(opLives<=0)modal('Flatline-ish ðŸ˜¬',`You scored ${opScore}. The patient has requested another doctor.`,[['Again',()=>{closeModal();resetOp()}]])};
+const opRenderOriginal=renderOp;renderOp=function(){opRenderOriginal();document.querySelectorAll('#opCavities .cavity').forEach((el,i)=>el.onclick=e=>operate(i,e))};
 /* PROPERTY EMPIRE PASS: optional Kai landlord with upgrades and rent pressure. */
 let propAI=false,propLevels=Array(24).fill(0);
 const propResetOriginal=resetProp,propEndOriginal=endPropTurn,propRenderOriginal=renderProp;
