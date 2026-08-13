@@ -232,7 +232,7 @@ body.kai-perf #kaiPerfHud{display:block}.kai-coach{color:var(--gold);font-weight
  <div class="game-shell">
   <div class="toolbar">
    <button onclick="resetPool()">New Rack</button>
-   <button onclick="poolAimHelp=!poolAimHelp;this.textContent=poolAimHelp?'Aim Guide: ON':'Aim Guide: OFF';drawPool()">Aim Guide: ON</button>
+    <button onclick="poolAimHelp=!poolAimHelp;this.textContent=poolAimHelp?'Aim Guide: ON':'Aim Guide: OFF';drawPool()">Aim Guide: ON</button><button onclick="poolAI=!poolAI;this.textContent=poolAI?'Kai AI: ON':'Kai AI: OFF'">Kai AI: OFF</button>
    <div class="status" id="poolStatus"></div>
   </div>
   <div class="pool-wrap"><canvas id="poolCanvas" width="900" height="500"></canvas></div>
@@ -529,7 +529,7 @@ function rollMT(){if(mtOver)return;let p=mtTurn,roll=1+Math.floor(Math.random()*
 
 /* POOL */
 const poolC=document.getElementById('poolCanvas'),poolX=poolC.getContext('2d');
-let poolBalls=[],poolTurn=0,poolGroups=[null,null],poolDrag=null,poolMoving=false,poolAimHelp=true,poolPottedThisShot=[],poolOver=false;
+let poolBalls=[],poolTurn=0,poolGroups=[null,null],poolDrag=null,poolMoving=false,poolAimHelp=true,poolAI=false,poolPottedThisShot=[],poolOver=false;
 const poolColors=['#f2d23b','#2457da','#d72f36','#7134a6','#ed7a23','#2e9b50','#7a2130','#111'];
 function resetPool(){
  poolTurn=0;poolGroups=[null,null];poolDrag=null;poolMoving=false;poolPottedThisShot=[];poolOver=false;poolBalls=[];
@@ -563,8 +563,9 @@ function finishPoolShot(){
  }
  if(cueScratch){let cue=poolBalls[0];cue.alive=true;cue.x=230;cue.y=250;cue.vx=cue.vy=0;poolTurn=1-poolTurn;poolStat('Scratch! Opponent to shoot.');drawPool();return}
  let own=poolGroups[poolTurn],keeps=poolPottedThisShot.some(n=>poolType(n)===own)||(own===null&&poolPottedThisShot.some(n=>poolType(n)));
- if(!keeps)poolTurn=1-poolTurn;poolStat();drawPool()
-}
+  if(!keeps)poolTurn=1-poolTurn;poolStat();drawPool();if(poolAI&&poolTurn===1&&!poolOver)setTimeout(poolAiShot,420)
+ }
+function poolAiShot(){if(poolMoving||poolOver||poolTurn!==1)return;let cue=poolBalls[0],targets=poolBalls.filter(b=>b.alive&&poolType(b.n)===poolGroups[1]);if(!targets.length)targets=poolBalls.filter(b=>b.alive&&b.n!==0);let t=targets.sort((a,b)=>Math.hypot(a.x-cue.x,a.y-cue.y)-Math.hypot(b.x-cue.x,b.y-cue.y))[0];if(!t)return;let dx=t.x-cue.x,dy=t.y-cue.y,m=Math.max(1,Math.hypot(dx,dy));cue.vx=dx/m*7.4;cue.vy=dy/m*7.4;poolPottedThisShot=[];poolMoving=true;animatePool()}
 function drawPool(){
  poolX.clearRect(0,0,900,500);poolX.fillStyle='#0a7047';poolX.fillRect(0,0,900,500);
  poolX.strokeStyle='rgba(255,255,255,.18)';poolX.lineWidth=2;poolX.strokeRect(36,36,828,428);
