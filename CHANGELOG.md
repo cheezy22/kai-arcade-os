@@ -30,6 +30,8 @@
 - Added support-aware KerPlunk drops and Mouse Trap trigger animation.
 - Added Shooting Gallery ammo, reload, accuracy and stage feedback.
 - Browser-tested all 20 rooms after the pass with zero console errors.
+- Added Mastermind Easy/Standard/Hard cycling with hard-mode unique colours and eight-guess pressure.
+- Added Shooting Gallery reload, accuracy and stage feedback.
 
 ## Remaining v1 backlog
 
