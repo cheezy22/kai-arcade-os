@@ -743,12 +743,18 @@ let oAI=true;
 function oAiMove(){if(oOver||!oAI||oT!==2)return;let moves=oMoves(2);if(!moves.length){oT=1;renderO();oStat();return}let pick=moves.sort((a,b)=>{let sa=oFlips(...a,2).length+(a[0]===0||a[0]===7?12:0)+(a[1]===0||a[1]===7?12:0),sb=oFlips(...b,2).length+(b[0]===0||b[0]===7?12:0)+(b[1]===0||b[1]===7?12:0);return sb-sa})[0],flips=oFlips(...pick,2);oB[pick[0]][pick[1]]=2;flips.forEach(([r,c])=>oB[r][c]=2);beep(360,.05);oT=1;if(!oMoves(1).length)oT=2;if(!oMoves(1).length&&!oMoves(2).length)oOver=true;renderO();oStat()}
 function resetOth(){oB=Array.from({length:8},()=>Array(8).fill(0));oB[3][3]=2;oB[3][4]=1;oB[4][3]=1;oB[4][4]=2;oT=1;oOver=false;renderO();oStat()}
 function oClick(r,c){if(oOver||oAI&&oT===2)return;let f=oFlips(r,c,oT);if(!f.length)return;oB[r][c]=oT;f.forEach(([rr,cc])=>oB[rr][cc]=oT);beep(420,.04);oT=3-oT;if(oAI&&oT===2){renderO();oStat('Kai is thinking…');setTimeout(oAiMove,260);return}if(!oMoves(oT).length)oT=3-oT;if(!oMoves(oT).length){oOver=true;let a=oB.flat().filter(x=>x===1).length,b=oB.flat().filter(x=>x===2).length;modal(a===b?'Draw':a>b?'Black wins':'White wins',`Black ${a} — ${b} White`,[['Again',()=>{closeModal();resetOth()}]])}renderO();oStat()}
+/* FRUSTRATION AI PASS: optional Kai player uses the real legal-move/capture state. */
+let frAI=false;
+const frAdvanceOriginal=advanceF;
+advanceF=function(extra){frAdvanceOriginal(extra);if(frAI&&frTurn!==0&&frRoll===null)setTimeout(frAiTurn,420)};
+function frAiTurn(){if(!frAI||frTurn===0||frRoll!==null)return;rollDice();setTimeout(()=>{if(!frAI||frTurn===0||frRoll===null)return;let choices=frPawns.map((p,i)=>({p,i})).filter(x=>x.p.player===frTurn&&canF(x.p)).sort((a,b)=>(b.p.pos<0?999:b.p.pos)-(a.p.pos<0?999:a.p.pos));if(choices[0])moveF(choices[0].i)},360)}
 /* INIT */
 resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);resetProp();resetKer();resetOp();resetDraughts();resetChess();resetOth();resetMM();resetMT();resetPool();shootStat();drawShooter();resetDarts(1);resetBowling(1);resetVegas();resetSnacks();
 /* 10x shared shell pass: a low-cost developer HUD, safer lifecycle pause and richer local profile stats. */
 (function kaiUpgrade(){
  const hud=document.getElementById('kaiPerfHud');let prev=performance.now(),frames=0,fps=0;
  const othToolbar=document.getElementById('othStatus')?.parentElement;if(othToolbar&&!document.getElementById('othMode')){let b=document.createElement('button');b.id='othMode';b.textContent='Mode: vs Kai AI';b.onclick=()=>{oAI=!oAI;b.textContent=oAI?'Mode: vs Kai AI':'Mode: 2 Players';resetOth()};othToolbar.insertBefore(b,othToolbar.lastElementChild)}
+ const frToolbar=document.getElementById('frusStatus')?.parentElement;if(frToolbar&&!document.getElementById('frAiMode')){let b=document.createElement('button');b.id='frAiMode';b.textContent='Kai: OFF';b.onclick=()=>{frAI=!frAI;b.textContent=frAI?'Kai: ON':'Kai: OFF';if(frAI&&frTurn!==0&&frRoll===null)frAiTurn()};frToolbar.insertBefore(b,frToolbar.lastElementChild)}
  function frame(now){frames++;if(now-prev>=500){fps=Math.round(frames*1000/(now-prev));const active=[typeof snackRunning!=='undefined'&&snackRunning,typeof shooting!=='undefined'&&shooting,typeof poolMoving!=='undefined'&&poolMoving].filter(Boolean).length;const room=document.querySelector('.page.active')?.id||'home';hud.textContent=`FPS ${fps} · frame ${(1000/Math.max(1,fps)).toFixed(1)}ms · loops ${active} · room ${room}`;frames=0;prev=now}requestAnimationFrame(frame)}
  requestAnimationFrame(frame);
  document.addEventListener('keydown',e=>{if(e.key==='F2'){document.body.classList.toggle('kai-perf');toast(document.body.classList.contains('kai-perf')?'Performance HUD on':'Performance HUD off')}});
