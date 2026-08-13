@@ -266,7 +266,7 @@ body.kai-perf #kaiPerfHud{display:block}.kai-coach{color:var(--gold);font-weight
    <div class="side">
     <div class="dart-scoreboard" id="dartPlayers"></div>
     <div style="margin-top:14px"><b>This visit:</b> <span id="dartVisit">0</span></div>
-    <p class="note">Tap the board to throw. Score exactly down from 301 to zero. Bust if a visit takes you below zero; your score resets to where the visit started.</p>
+     <p class="note">Swipe from the board centre toward your target. Direction sets aim, swipe length sets power and a small accuracy spread keeps every throw human. Bust rules are on.</p>
    </div>
   </div>
  </div>
@@ -608,7 +608,7 @@ bowlC.addEventListener('pointerdown',e=>{if(bowlBusy||bowlOver)return;let p=bowl
 bowlC.addEventListener('pointermove',e=>{if(bowlDrag){bowlDrag.cur=bowlPos(e);drawBowling()}})
 bowlC.addEventListener('pointerup',e=>{if(!bowlDrag)return;let dx=bowlDrag.start.x-bowlDrag.cur.x,dy=bowlDrag.start.y-bowlDrag.cur.y,m=Math.hypot(dx,dy);bowlDrag=null;if(m<15){drawBowling();return}let angle=Math.max(-.32,Math.min(.32,dx/260)),power=Math.max(.55,Math.min(1.35,(-dy+120)/240));bowlBusy=true;animateBowl(angle,power)})
 function animateBowl(angle,power){let startX=380,y=500,t=0;function step(){t+=.018*power;bowlBall.y=500-(420*Math.min(1,t));bowlBall.x=startX+Math.sin(angle)*(500-bowlBall.y)*.85;drawBowling();if(t<1)requestAnimationFrame(step);else finishBowl(angle,power)}step()}
-function finishBowl(angle,power){let knocked=0,impactX=bowlBall.x,spread=42+power*28;bowlPins.forEach(pin=>{if(pin.down)return;let d=Math.abs(pin.x-impactX),chance=Math.max(0,.95-d/spread)+(power-.8)*.18+(Math.random()-.5)*.18;if(chance>.38){pin.down=true;knocked++}});beep(knocked>=8?720:420,.12);let frame=bowlFramesData[bowlTurn][bowlFrame];frame.push(knocked);bowlRoll++;drawBowling();renderBowlScore();let standing=bowlPins.filter(p=>!p.down).length,isTenth=bowlFrame===9;
+function finishBowl(angle,power){let knocked=0,impactX=bowlBall.x,energy=power*115;/* deterministic lane collision: the ball hits a pin, then nearby pins receive a reduced impulse */bowlPins.forEach(pin=>{if(pin.down)return;let d=Math.abs(pin.x-impactX),impact=energy-d;if(impact>42){pin.down=true;knocked++}});for(let pin of bowlPins.filter(p=>p.down)){for(let other of bowlPins){if(!other.down&&Math.abs(other.x-pin.x)<58&&energy>72){other.down=true;knocked++}}}beep(knocked>=8?720:420,.12);let frame=bowlFramesData[bowlTurn][bowlFrame];frame.push(knocked);bowlRoll++;drawBowling();renderBowlScore();let standing=bowlPins.filter(p=>!p.down).length,isTenth=bowlFrame===9;
  if(isTenth){
    let first=frame[0],second=frame[1];
    if(frame.length===1&&first===10){resetPins();bowlRoll=1;bowlBusy=false;bowlStat('Strike! Bonus roll');return}
