@@ -442,6 +442,10 @@ function bsAllSunk(b){for(let row of b)for(let x of row)if(x.ship&&!x.hit)return
 function bsAi(){let choices=[];for(let r=0;r<10;r++)for(let c=0;c<10;c++)if(!bsP[r][c].hit)choices.push([r,c]);let [r,c]=choices[Math.floor(Math.random()*choices.length)];bsP[r][c].hit=true;renderBS();if(bsAllSunk(bsP))return bsWin(false);bsStat(`Kai fired ${String.fromCharCode(65+c)}${r+1} — ${bsP[r][c].ship?'hit!':'miss'}. Your shot.`)}
 function bsWin(player){bsOver=true;modal(player?'Fleet destroyed! 🚢':'Kai wins the sea.',player?'Enemy fleet sunk. Admiralty mildly impressed.':'Your fleet is now an artificial reef.',[['Again',()=>{closeModal();resetBS()}]])}
 
+/* Hunt/target AI override: after a hit Kai fans out through adjacent cells instead of firing randomly. */
+let bsTargets=[];
+function resetBS(){bsP=empty10();bsE=empty10();placeFleet(bsP);placeFleet(bsE);bsTargets=[];bsOver=false;renderBS();bsStat('Your shot')}
+function bsAi(){let choices=bsTargets.filter(([r,c])=>!bsP[r][c].hit);if(!choices.length)for(let r=0;r<10;r++)for(let c=0;c<10;c++)if(!bsP[r][c].hit&&(r+c)%2===0)choices.push([r,c]);if(!choices.length)for(let r=0;r<10;r++)for(let c=0;c<10;c++)if(!bsP[r][c].hit)choices.push([r,c]);let [r,c]=choices[Math.floor(Math.random()*choices.length)];bsTargets=bsTargets.filter(x=>x[0]!==r||x[1]!==c);bsP[r][c].hit=true;if(bsP[r][c].ship)for(let [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){let nr=r+dr,nc=c+dc;if(nr>=0&&nr<10&&nc>=0&&nc<10&&!bsP[nr][nc].hit)bsTargets.push([nr,nc])}renderBS();if(bsAllSunk(bsP))return bsWin(false);bsStat(`Kai fired ${String.fromCharCode(65+c)}${r+1} — ${bsP[r][c].ship?'hit!':'miss'}. Your shot.`)}
 /* SNAKES & LADDERS */
 const ladders={3:22,8:30,28:55,58:77,75:86,80:99},snakes={17:4,52:29,57:40,62:18,88:24,95:51,97:79};
 const slNames=['Red','Blue','Green','Yellow'];let slPlayers=2,slPos=[1,1],slTurn=0,slOver=false,slRolling=false;
