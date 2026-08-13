@@ -748,6 +748,16 @@ let frAI=false;
 const frAdvanceOriginal=advanceF;
 advanceF=function(extra){frAdvanceOriginal(extra);if(frAI&&frTurn!==0&&frRoll===null)setTimeout(frAiTurn,420)};
 function frAiTurn(){if(!frAI||frTurn===0||frRoll!==null)return;rollDice();setTimeout(()=>{if(!frAI||frTurn===0||frRoll===null)return;let choices=frPawns.map((p,i)=>({p,i})).filter(x=>x.p.player===frTurn&&canF(x.p)).sort((a,b)=>(b.p.pos<0?999:b.p.pos)-(a.p.pos<0?999:a.p.pos));if(choices[0])moveF(choices[0].i)},360)}
+/* PROPERTY EMPIRE PASS: optional Kai landlord with upgrades and rent pressure. */
+let propAI=false,propLevels=Array(24).fill(0);
+const propResetOriginal=resetProp,propEndOriginal=endPropTurn,propRenderOriginal=renderProp;
+resetProp=function(){propLevels=Array(24).fill(0);propResetOriginal()};
+renderProp=function(){propRenderOriginal();document.querySelectorAll('#propBoard .prop-cell').forEach((el,i)=>{if(propLevels[i]){let tag=document.createElement('div');tag.className='prop-price';tag.textContent='Lv '+propLevels[i];el.appendChild(tag)}})};
+endPropTurn=function(){propEndOriginal();if(propAI&&propTurn===1)setTimeout(aiPropTurn,350)};
+function aiPropTurn(){if(!propAI||propTurn!==1||propRollVal!==null)return;rollProp();if(propRollVal!==null)setTimeout(()=>buyProp(),260)}
+const propBuyOriginal=buyProp;
+buyProp=function(){if(propOver||propRollVal==null)return;let p=propPlayers[propTurn],[name,price]=propSpaces[p.pos];if(price&&propOwners[p.pos]===propTurn&&p.cash>=Math.round(price*.5)){p.cash-=Math.round(price*.5);propLevels[p.pos]=Math.min(3,(propLevels[p.pos]||0)+1);toast(`${name} upgraded to Lv ${propLevels[p.pos]}`);endPropTurn();renderProp();propStat();return}propBuyOriginal()};
+function rollProp(){if(propOver||propRollVal!=null)return toast('Resolve this space first.');let d1=1+Math.floor(Math.random()*6),d2=1+Math.floor(Math.random()*6),p=propPlayers[propTurn];propRollVal=d1+d2;p.pos=(p.pos+propRollVal)%propSpaces.length;let [name,price]=propSpaces[p.pos];if(name==='GO')p.cash+=200;if(name==='Tax')p.cash-=120;if(name==='Chance'){let x=Math.random()<.5?100:-100;p.cash+=x;toast(x>0?'Chance pays 100':'Chance costs 100')}if(name==='Community'){p.cash+=75;toast('Community chest: +75')}let owner=propOwners[p.pos];if(price&&owner>=0&&owner!==propTurn){let rent=Math.round(price*(.28+(propLevels[p.pos]||0)*.12));p.cash-=rent;propPlayers[owner].cash+=rent;toast(`Rent ${rent}`);endPropTurn()}else if(!price||owner===propTurn)endPropTurn();renderProp();checkProp();propStat()}
 /* INIT */
 resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);resetProp();resetKer();resetOp();resetDraughts();resetChess();resetOth();resetMM();resetMT();resetPool();shootStat();drawShooter();resetDarts(1);resetBowling(1);resetVegas();resetSnacks();
 /* 10x shared shell pass: a low-cost developer HUD, safer lifecycle pause and richer local profile stats. */
@@ -755,6 +765,7 @@ resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);
  const hud=document.getElementById('kaiPerfHud');let prev=performance.now(),frames=0,fps=0;
  const othToolbar=document.getElementById('othStatus')?.parentElement;if(othToolbar&&!document.getElementById('othMode')){let b=document.createElement('button');b.id='othMode';b.textContent='Mode: vs Kai AI';b.onclick=()=>{oAI=!oAI;b.textContent=oAI?'Mode: vs Kai AI':'Mode: 2 Players';resetOth()};othToolbar.insertBefore(b,othToolbar.lastElementChild)}
  const frToolbar=document.getElementById('frusStatus')?.parentElement;if(frToolbar&&!document.getElementById('frAiMode')){let b=document.createElement('button');b.id='frAiMode';b.textContent='Kai: OFF';b.onclick=()=>{frAI=!frAI;b.textContent=frAI?'Kai: ON':'Kai: OFF';if(frAI&&frTurn!==0&&frRoll===null)frAiTurn()};frToolbar.insertBefore(b,frToolbar.lastElementChild)}
+ const propToolbar=document.getElementById('propStatus')?.parentElement;if(propToolbar&&!document.getElementById('propAiMode')){let b=document.createElement('button');b.id='propAiMode';b.textContent='Kai AI: OFF';b.onclick=()=>{propAI=!propAI;b.textContent=propAI?'Kai AI: ON':'Kai AI: OFF';if(propAI&&propTurn===1&&propRollVal===null)aiPropTurn()};propToolbar.insertBefore(b,propToolbar.lastElementChild)}
  function frame(now){frames++;if(now-prev>=500){fps=Math.round(frames*1000/(now-prev));const active=[typeof snackRunning!=='undefined'&&snackRunning,typeof shooting!=='undefined'&&shooting,typeof poolMoving!=='undefined'&&poolMoving].filter(Boolean).length;const room=document.querySelector('.page.active')?.id||'home';hud.textContent=`FPS ${fps} · frame ${(1000/Math.max(1,fps)).toFixed(1)}ms · loops ${active} · room ${room}`;frames=0;prev=now}requestAnimationFrame(frame)}
  requestAnimationFrame(frame);
  document.addEventListener('keydown',e=>{if(e.key==='F2'){document.body.classList.toggle('kai-perf');toast(document.body.classList.contains('kai-perf')?'Performance HUD on':'Performance HUD off')}});
