@@ -817,6 +817,10 @@ const mmResetOriginal=resetMM,mmStatOriginal=mmStat,mmSubmitOriginal=submitMM;
 resetMM=function(){mmResetOriginal();if(mmDifficulty==='hard'){let pool=[0,1,2,3,4,5].sort(()=>Math.random()-.5);mmCode=pool.slice(0,4);renderMM()}mmStat()};
 mmStat=function(){mmStatOriginal();let e=document.getElementById('mmStatus');if(e)e.textContent=`${mmDifficulty[0].toUpperCase()+mmDifficulty.slice(1)} · Guess ${mmAttempts+1}/${mmDifficulty==='hard'?8:10}`};
 submitMM=function(){if(mmDifficulty==='hard'&&mmAttempts>=7){mmAttempts=9;return mmSubmitOriginal()}mmSubmitOriginal()};
+/* DARTS TACTICS PASS: live checkout advice for 301/501 play. */
+const checkoutMap={170:'T20 · T20 · Bull',167:'T20 · T19 · Bull',164:'T20 · T18 · Bull',161:'T20 · T17 · Bull',160:'T20 · T20 · D20',121:'T20 · T11 · Bull',100:'T20 · D20',80:'T20 · D10',60:'S20 · D20',50:'Bull',40:'D20',32:'D16',24:'D12',16:'D8',8:'D4',4:'D2',2:'D1'};
+const dartStatTactics=dartStat;
+dartStat=function(msg){dartStatTactics(msg);if(dartMode!==99){let el=document.getElementById('dartsStatus'),score=dartScores[dartTurn];if(el&&checkoutMap[score])el.textContent+=(msg?'':'')+` · Checkout: ${checkoutMap[score]}`}};
 /* INIT */
 resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);resetProp();resetKer();resetOp();resetDraughts();resetChess();resetOth();resetMM();resetMT();resetPool();shootStat();drawShooter();resetDarts(1);resetBowling(1);resetVegas();resetSnacks();
 /* 10x shared shell pass: a low-cost developer HUD, safer lifecycle pause and richer local profile stats. */
