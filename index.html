@@ -772,6 +772,16 @@ let dartAI=false;
 function dartAiVisit(){if(!dartAI||dartOver||dartTurn!==1)return;let aim= dartMode===99 ? 310+Math.sin((dartThrows%20)*Math.PI/10)*154 : 310, aimY=dartMode===99 ? 310-Math.cos((dartThrows%20)*Math.PI/10)*154 : 151;dartThrow(aim+(Math.random()-.5)*14,aimY+(Math.random()-.5)*14)}
 const dartNextOriginal=nextDartTurn;
 nextDartTurn=function(){dartNextOriginal();if(dartAI&&dartTurn===1&&!dartOver)setTimeout(dartAiVisit,320)};
+/* CHESS AI PASS: legal-move-aware material search for a lightweight offline opponent. */
+let chessAI=false;
+const chessValue={P:100,N:320,B:330,R:500,Q:900,K:20000};
+function chSnapshot(){return chB.map(row=>row.slice())}
+function chRestore(s){chB=s.map(row=>row.slice())}
+function chApply(m){let [fr,fc,tr,tc]=m,p=chB[fr][fc],captured=chB[tr][tc];chB[tr][tc]=p;chB[fr][fc]=null;return captured}
+function chScore(){let s=0;for(let row of chB)for(let p of row)if(p)s+=(p[0]==='b'?-1:1)*chessValue[p[1]];return s}
+function chAiMove(){if(!chessAI||chOver||chT!=='b')return;let moves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(chB[r][c]?.[0]==='b')for(let [rr,cc] of chessMoves(r,c))moves.push([r,c,rr,cc]);if(!moves.length){chessState();return}let best=moves[0],bestScore=Infinity;for(let m of moves){let snap=chSnapshot(),captured=chApply(m),score=chScore();chRestore(snap);if(score<bestScore){bestScore=score;best=m}}chApply(best);if(chB[best[2]][best[3]][1]==='P'&&(best[2]===0||best[2]===7))chB[best[2]][best[3]]='bQ';chT='w';chSel=null;beep(220,.06);renderChess();chStat()}
+const chessClickOriginal=chClick;
+chClick=function(r,c){if(chessAI&&chT==='b')return;chessClickOriginal(r,c);if(chessAI&&chT==='b'&&!chOver)setTimeout(chAiMove,340)};
 /* INIT */
 resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);resetProp();resetKer();resetOp();resetDraughts();resetChess();resetOth();resetMM();resetMT();resetPool();shootStat();drawShooter();resetDarts(1);resetBowling(1);resetVegas();resetSnacks();
 /* 10x shared shell pass: a low-cost developer HUD, safer lifecycle pause and richer local profile stats. */
@@ -782,6 +792,7 @@ resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);
  const propToolbar=document.getElementById('propStatus')?.parentElement;if(propToolbar&&!document.getElementById('propAiMode')){let b=document.createElement('button');b.id='propAiMode';b.textContent='Kai AI: OFF';b.onclick=()=>{propAI=!propAI;b.textContent=propAI?'Kai AI: ON':'Kai AI: OFF';if(propAI&&propTurn===1&&propRollVal===null)aiPropTurn()};propToolbar.insertBefore(b,propToolbar.lastElementChild)}
  const guessToolbar=document.getElementById('guessStatus')?.parentElement;if(guessToolbar&&!document.getElementById('guessAiAsk')){let b=document.createElement('button');b.id='guessAiAsk';b.textContent='Kai asks best question';b.onclick=guessAiAsk;guessToolbar.insertBefore(b,guessToolbar.lastElementChild)}
  const dartToolbar=document.getElementById('dartsStatus')?.parentElement;if(dartToolbar&&!document.getElementById('dartAiMode')){let b=document.createElement('button');b.id='dartAiMode';b.textContent='Kai AI: OFF';b.onclick=()=>{dartAI=!dartAI;b.textContent=dartAI?'Kai AI: ON':'Kai AI: OFF';if(dartAI&&dartTurn===1&&!dartOver)dartAiVisit()};dartToolbar.insertBefore(b,dartToolbar.lastElementChild)}
+ const chessToolbar=document.getElementById('chessStatus')?.parentElement;if(chessToolbar&&!document.getElementById('chessAiMode')){let b=document.createElement('button');b.id='chessAiMode';b.textContent='Kai AI: OFF';b.onclick=()=>{chessAI=!chessAI;b.textContent=chessAI?'Kai AI: ON':'Kai AI: OFF';if(chessAI&&chT==='b')chessState();if(chessAI&&chT==='b'&&!chOver)setTimeout(chAiMove,260)};chessToolbar.insertBefore(b,chessToolbar.lastElementChild)}
  function frame(now){frames++;if(now-prev>=500){fps=Math.round(frames*1000/(now-prev));const active=[typeof snackRunning!=='undefined'&&snackRunning,typeof shooting!=='undefined'&&shooting,typeof poolMoving!=='undefined'&&poolMoving].filter(Boolean).length;const room=document.querySelector('.page.active')?.id||'home';hud.textContent=`FPS ${fps} · frame ${(1000/Math.max(1,fps)).toFixed(1)}ms · loops ${active} · room ${room}`;frames=0;prev=now}requestAnimationFrame(frame)}
  requestAnimationFrame(frame);
  document.addEventListener('keydown',e=>{if(e.key==='F2'){document.body.classList.toggle('kai-perf');toast(document.body.classList.contains('kai-perf')?'Performance HUD on':'Performance HUD off')}});
