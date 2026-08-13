@@ -821,6 +821,12 @@ submitMM=function(){if(mmDifficulty==='hard'&&mmAttempts>=7){mmAttempts=9;return
 const checkoutMap={170:'T20 · T20 · Bull',167:'T20 · T19 · Bull',164:'T20 · T18 · Bull',161:'T20 · T17 · Bull',160:'T20 · T20 · D20',121:'T20 · T11 · Bull',100:'T20 · D20',80:'T20 · D10',60:'S20 · D20',50:'Bull',40:'D20',32:'D16',24:'D12',16:'D8',8:'D4',4:'D2',2:'D1'};
 const dartStatTactics=dartStat;
 dartStat=function(msg){dartStatTactics(msg);if(dartMode!==99){let el=document.getElementById('dartsStatus'),score=dartScores[dartTurn];if(el&&checkoutMap[score])el.textContent+=(msg?'':'')+` · Checkout: ${checkoutMap[score]}`}};
+/* POOL RULES PASS: scratch grants ball-in-hand placement before the next shot. */
+let poolBallInHand=false;
+const poolResetWithHand=resetPool;resetPool=function(){poolBallInHand=false;poolResetWithHand()};
+const poolFinishWithHand=finishPoolShot;finishPoolShot=function(){let scratch=poolPottedThisShot.includes(0);poolFinishWithHand();if(scratch&&!poolOver){poolBallInHand=true;poolStat('Scratch — place cue ball, then shoot.');drawPool()}};
+poolC.addEventListener('pointerdown',e=>{if(!poolBallInHand||poolMoving||poolOver)return;let p=poolPos(e),cue=poolBalls[0];if(p.x<45||p.x>855||p.y<45||p.y>455)return;cue.x=p.x;cue.y=p.y;cue.vx=cue.vy=0;poolBallInHand=false;drawPool();toast('Cue ball placed. Pull back to shoot.');e.stopImmediatePropagation()},{capture:true});
+const poolDrawWithHand=drawPool;drawPool=function(){poolDrawWithHand();if(poolBallInHand&&poolBalls[0]?.alive){poolX.beginPath();poolX.arc(poolBalls[0].x,poolBalls[0].y,18,0,Math.PI*2);poolX.strokeStyle='#ffd85d';poolX.lineWidth=3;poolX.stroke()}};
 /* INIT */
 resetFootball();resetC4();setupFrustration(2);resetGuess();resetBS();resetSL(2);resetProp();resetKer();resetOp();resetDraughts();resetChess();resetOth();resetMM();resetMT();resetPool();shootStat();drawShooter();resetDarts(1);resetBowling(1);resetVegas();resetSnacks();
 /* 10x shared shell pass: a low-cost developer HUD, safer lifecycle pause and richer local profile stats. */
