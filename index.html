@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Kai Arcade OS — a pocket-sized family arcade." />
+  <title>Kai Arcade OS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <button class="brand" data-action="home" aria-label="Return to arcade"><span class="brand-mark">K</span><span>KAI ARCADE <small>OS / 1.5</small></span></button>
+      <div class="top-actions"><button class="chip" id="coachToggle">✦ Coach: Helpful</button><button class="icon-btn" id="soundToggle" aria-label="Toggle sound">◒</button><button class="profile-pill" id="profileButton"><span class="avatar">🦊</span><span id="profileName">Player One</span><b id="profileLevel">LV 03</b></button></div>
+    </header>
+    <main id="homeView" class="home-view">
+      <section class="hero">
+        <div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> CABINET ONLINE · 5 ACTIVE ROOMS</div><h1>Your pocket-sized<br><em>arcade.</em></h1><p>Jump into quick games, build your streak and make tonight a Game Night.</p><div class="hero-actions"><button class="primary" data-game="pool">▶ CONTINUE PLAYING <span>Pool · Break shot</span></button><button class="secondary" data-action="game-night">Game Night <span>⌘</span></button></div></div>
+        <div class="hero-art" role="img" aria-label="Kai mascot in a colorful arcade"></div>
+      </section>
+      <section class="dashboard-grid"><div class="section-heading"><div><span class="eyebrow">YOUR ARCADE</span><h2>Pick a room</h2></div><button class="text-btn" id="showAll">View all 20 <span>↗</span></button></div><div class="game-grid" id="gameGrid"></div></section>
+      <section class="lower-grid"><article class="streak-card"><div><span class="eyebrow">RUN YOUR STREAK</span><h3>Tonight's high score</h3><p id="streakCopy">Win 2 more games to unlock <b>Combo Kid</b>.</p></div><div class="streak-ring"><strong id="winCount">04</strong><span>WINS</span></div></article><article class="coach-card"><div class="coach-face">✦</div><div><span class="eyebrow">KAI COACH</span><h3 id="coachLine">“Pool first. I can feel a clean break.”</h3><button class="text-btn" data-action="coach">Ask for a hint <span>→</span></button></div></article></section>
+    </main>
+    <main id="gameView" class="game-view hidden"><div class="game-head"><button class="back-btn" data-action="home">← Arcade</button><div><span class="eyebrow" id="gameKicker">ROOM 01</span><h2 id="gameTitle">Pool</h2></div><div class="game-head-actions"><button class="icon-btn" data-action="pause">Ⅱ</button><button class="secondary small" data-action="restart">Restart</button></div></div><div id="gameMount" class="game-mount"></div></main>
+    <div id="toast" class="toast" role="status"></div>
+    <div id="profileModal" class="modal hidden"><div class="modal-card"><button class="modal-close" data-action="close-modal">×</button><span class="eyebrow">PLAYER PROFILE</span><h2>Make it yours.</h2><label>Player name<input id="nameInput" maxlength="18" value="Player One"></label><label>Arcade mode<select id="modeSelect"><option value="standard">Standard</option><option value="teddy">Teddy Mode · bigger + kinder</option></select></label><button class="primary" data-action="save-profile">Save profile</button></div></div>
+    <footer><span>© KAI ARCADE OS</span><span>OFFLINE-FIRST · NO ADS · PLAY MONEY ONLY</span><span>v1.5.0</span></footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
