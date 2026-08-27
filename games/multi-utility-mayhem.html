@@ -234,8 +234,10 @@ function press(e){
    if(p.clientX>=x&&p.clientX<=x+w&&p.clientY>=y&&p.clientY<=y+h){tapJob(j);draw();break}
  }
 }
-addEventListener('pointerdown',press);
-addEventListener('touchstart',e=>{press(e);e.preventDefault()},{passive:false});
+addEventListener('pointerdown',e=>{ if(e.target.closest && e.target.closest('button')) return; press(e); });
+addEventListener('touchstart',e=>{ if(e.target.closest && e.target.closest('button')) return; press(e); e.preventDefault(); },{passive:false});
+$('start').addEventListener('touchend',e=>{e.preventDefault();start();},{passive:false});
+$('again').addEventListener('touchend',e=>{e.preventDefault();start();},{passive:false});
 draw();
 })();
 </script>
