@@ -1,0 +1,75 @@
+l={type:'heal',x:h.x,y:h.y}}
+let e=nearestEnemy(a,a.role==='scout'?380:280);if(e&&(a.role==='guard'||a.role==='raider'||c.rage>55||a.memory.killer===e.c))return a.goal={type:'fight',target:e};
+if(a.hunger>72){let r=nearestResource(a,'food');if(r)return a.goal={type:'gather',target:r}}
+if(a.role==='raider'&&c.war.size){let ec=[...c.war][0],t=buildings.find(b=>b.c===ec&&b.type==='farm')||buildings.find(b=>b.c===ec);if(t)return a.goal={type:'raid',target:t}}
+if(a.role==='builder'&&c.wood>16&&Math.random()<.55)return a.goal={type:'build',x:clamp(c.home.x+R(-260,260),40,WORLD.w-40),y:clamp(c.home.y+R(-260,260),40,WORLD.h-40)}
+if(a.role==='scout')return a.goal={type:'move',x:clamp(a.x+R(-420,420),30,WORLD.w-30),y:clamp(a.y+R(-420,420),30,WORLD.h-30)}
+let r=nearestResource(a);if(r)return a.goal={type:'gather',target:r};return a.goal={type:'move',x:clamp(a.x+R(-170,170),20,WORLD.w-20),y:clamp(a.y+R(-170,170),20,WORLD.h-20)}}
+function steer(a,x,y,speed,dt){let dx=x-a.x,dy=y-a.y,l=Math.hypot(dx,dy)||1;a.vx+=dx/l*speed*dt;a.vy+=dy/l*speed*dt}
+function hit(att,def,dt,mult=1){if(Math.random()>dt*(att.role==='raider'?4.4:att.role==='guard'||att.role==='leader'?3.6:2.2))return;let dmg=R(5,13)*mult*(att.morale/80);def.hp-=dmg;fx.push({x:def.x,y:def.y,vx:R(-12,12),vy:R(-25,-8),life:.55,max:.55,text:'✦',color:clans[att.c].color});if(def.hp<=0&&def.alive){def.alive=false;let A=clans[att.c],D=clans[def.c];A.kills++;D.deaths++;A.grudge[def.c]=(A.grudge[def.c]||0)+1;D.grudge[att.c]=(D.grudge[att.c]||0)+5;att.fame+=2;att.morale=clamp(att.morale+8,0,100);if(def.role==='leader'){say(`☠️ ${D.name}'s leader ${def.name} falls to ${att.name}!`,true);spawnLeader(D)}else if(att.fame>12&&Math.random()<.2)say(`⭐ ${att.name} of ${A.name} is becoming a legend.`)}}
+function spawnLeader(c){let a=spawnAgent(c.id,c.home.x+R(-30,30),c.home.y+R(-30,30),'leader');a.name='Chief '+namePerson();a.fame=4;c.leader=a;c.morale=clamp(c.morale-18,0,100)}
+function updateAgent(a,dt){if(!a.alive)return;a.age+=dt;a.hunger=clamp(a.hunger+dt*1.15,0,100);a.morale+=(clans[a.c].morale-a.morale)*dt*.03;if(a.age>R(170,260)||a.hunger>=100){a.alive=false;clans[a.c].deaths++;return}a.think-=dt;if(a.think<=0||!a.goal||a.goal.target&&!a.goal.target.alive&&a.goal.type==='fight')chooseGoal(a);let g=a.goal,c=clans[a.c];if(g){if(g.type==='fight'&&g.target?.alive){let d=dist(a,g.target);if(d<18)hit(a,g.target,dt);else steer(a,g.target.x,g.target.y,95,dt)}
+else if(g.type==='raid'&&g.target){let d=dist(a,g.target);if(d<22){g.target.hp-=dt*12;c.food+=dt*1.8;if(g.target.hp<=0){say(`🔥 ${c.name} burns a ${g.target.type} belonging to ${clans[g.target.c].name}.`);g.target.hp=0;g.target=null;a.goal=null}}else steer(a,g.target.x,g.target.y,85,dt)}
+else if(g.type==='gather'&&g.target){let d=dist(a,g.target);if(d<18){let take=Math.min(g.target.n,dt*5);g.target.n-=take;if(g.target.kind==='food'){c.food+=take;a.hunger=Math.max(0,a.hunger-take*5)}else c[g.target.kind]+=take;if(g.target.n<=0)a.goal=null}else steer(a,g.target.x,g.target.y,55,dt)}
+else if(g.type==='build'){let d=Math.hypot(a.x-g.x,a.y-g.y);if(d<18){if(c.wood>14){let t=c.food<35?'farm':c.war.size&&Math.random()<.55?'barracks':agents.filter(x=>x.c===c.id&&x.hp<60).length>3?'hospital':Math.random()<.4?'watchtower':'farm';addBuilding(a.c,g.x,g.y,t);c.wood-=14;c.stone=Math.max(0,c.stone-5);say(`🏗️ ${c.name} builds a ${t} on the frontier.`);a.goal=null}}else steer(a,g.x,g.y,50,dt)}
+else if(g.type==='heal'){let d=Math.hypot(a.x-g.x,a.y-g.y);if(d<25){a.hp=clamp(a.hp+dt*20,0,100);if(a.hp>88)a.goal=null}else steer(a,g.x,g.y,55,dt)}
+else if(g.type==='move'){let d=Math.hypot(a.x-g.x,a.y-g.y);if(d<20)a.goal=null;else steer(a,g.x,g.y,45,dt)}}
+let max=a.role==='raider'?68:a.role==='scout'?72:a.role==='guard'?58:48,l=Math.hypot(a.vx,a.vy);if(l>max){a.vx=a.vx/l*max;a.vy=a.vy/l*max}a.vx*=.91;a.vy*=.91;a.x=clamp(a.x+a.vx*dt,8,WORLD.w-8);a.y=clamp(a.y+a.vy*dt,8,WORLD.h-8)}
+function clanTick(c,dt){let live=agents.filter(a=>a.alive&&a.c===c.id),own=buildings.filter(b=>b.hp>0&&b.c===c.id),farms=own.filter(b=>b.type==='farm').length,barr=own.filter(b=>b.type==='barracks').length,hosp=own.filter(b=>b.type==='hospital').length,towers=own.filter(b=>b.type==='watchtower').length;c.food+=farms*dt*.48;c.wood+=own.filter(b=>b.type==='camp').length*dt*.08;c.food-=live.length*dt*.045;c.morale=clamp(c.morale+dt*(c.food>20?.25:-1.1)+hosp*dt*.015,0,100);c.rage=clamp(c.rage+dt*(c.trait==='vengeful'?.15:-.02)-towers*dt*.005,0,100);if(c.food<12){c.rage=clamp(c.rage+dt*.9,0,100);c.morale=clamp(c.morale-dt*.45,0,100);if(c.rage>58&&Math.random()<dt*.018){let target=clans.filter(o=>o.id!==c.id&&!c.war.has(o.id)).sort((a,b)=>b.food-a.food)[0];if(target&&target.food>c.food+15)setWar(c.id,target.id,true,'desperate food raid')}}for(const b of own){b.age+=dt;b.work+=dt;if(b.work>35&&b.level<3&&c.wood>22&&c.stone>12){b.level++;b.work=0;b.maxHp=(b.maxHp||b.hp)+70;b.hp=b.maxHp;c.wood-=22;c.stone-=12;say(`🏗️ ${c.name} upgrades its ${b.type} to level ${b.level}.`)}}
+if(c.food>35&&live.length<95&&Math.random()<dt*(.15+.04*farms)){let role=Math.random()<Math.min(.55,.15+barr*.05)?'guard':pick(ROLES);spawnAgent(c.id,c.home.x+R(-75,75),c.home.y+R(-75,75),role);c.food-=7}
+c.dipClock-=dt;if(c.dipClock<=0){c.dipClock=R(7,15);let others=clans.filter(o=>o.id!==c.id),o=pick(others),g=c.grudge[o.id]||0;if(c.war.has(o.id)){if(c.morale<35||Math.random()<.12){setWar(c.id,o.id,false);say(`🤝 ${c.name} and ${o.name} sign an uneasy peace.`)}}else if(g>22||c.rage>72||c.trait==='chaotic'&&Math.random()<.25){setWar(c.id,o.id,true,g>22?'an old blood debt':'pure bad judgement')}else if(g<5&&Math.random()<.14){c.allies.add(o.id);o.allies.add(c.id);say(`🤝 ${c.name} and ${o.name} form a snack pact.`)}}}
+function updateTerritory(){for(const c of clans)c.territory=0;for(let gy=0;gy<ROWS;gy++)for(let gx=0;gx<COLS;gx++){let x=gx*CELL+CELL/2,y=gy*CELL+CELL/2,best=null,score=-1e9;for(const c of clans){let s=-Math.hypot(x-c.home.x,y-c.home.y);for(const b of buildings)if(b.c===c.id&&b.hp>0)s=Math.max(s,180-Math.hypot(x-b.x,y-b.y));for(const a of agents)if(a.alive&&a.c===c.id)s=Math.max(s,75-Math.hypot(x-a.x,y-a.y));if(s>score){score=s;best=c}}if(best&&score>-260)best.territory++}}
+function battleDetect(){for(let i=0;i<agents.length;i++){let a=agents[i];if(!a.alive)continue;let e=nearestEnemy(a,70);if(e&&Math.random()<.025){battles.push({x:(a.x+e.x)/2,y:(a.y+e.y)/2,a:a.c,b:e.c,life:5,max:5});if(director&&Math.random()<.35){cam.tx=(a.x+e.x)/2;cam.ty=(a.y+e.y)/2;cam.tz=Math.max(cam.z,1.15);say(`🎥 Border clash: ${clans[a.c].name} vs ${clans[e.c].name}!`)}}}battles=battles.filter(b=>(b.life-=.3)>0)}
+function randomEvent(){let c=pick(clans);if(Math.random()<.45){c.food+=35;say(`🍟 A legendary snack cache is found by ${c.name}.`)}else if(Math.random()<.5){c.morale=clamp(c.morale+18,0,100);say(`🎉 ${c.name} invents a national holiday for crisps.`)}else{let o=pick(clans.filter(x=>x!==c));c.grudge[o.id]=(c.grudge[o.id]||0)+12;say(`😡 ${c.name} blames ${o.name} for a suspiciously missing sausage roll.`)}}
+function update(dt){clock+=dt;year=Math.floor(clock/5);for(const c of clans)clanTick(c,dt);for(const a of agents)updateAgent(a,dt);agents=agents.filter(a=>a.alive);buildings=buildings.filter(b=>b.hp>0);resources=resources.filter(r=>r.n>0);if(resources.length<160&&Math.random()<dt*2){let wf=.72*regen.food,ww=.14*regen.wood,ws=.14*regen.stone,sum=wf+ww+ws;if(sum>0){let q=Math.random()*sum,kind=q<wf?'food':q<wf+ww?'wood':'stone';resources.push({x:R(30,WORLD.w-30),y:R(30,WORLD.h-30),kind,n:R(8,25)})}}
+for(const f of fx){f.x+=f.vx*dt;f.y+=f.vy*dt;f.life-=dt}fx=fx.filter(f=>f.life>0);if(Math.random()<dt*.18)battleDetect();if(Math.random()<dt*(chaos?.035:.007))randomEvent();if(Math.floor(clock*2)%12===0)updateTerritory();headlineTimer-=dt;if(headlineTimer<=0)$('headline').classList.remove('on');
+if(director){let hot=battles.sort((a,b)=>b.life-a.life)[0];if(hot&&Math.random()<dt*.9){cam.tx=hot.x;cam.ty=hot.y;cam.tz=1.25}else if(Math.random()<dt*.04){let hero=agents.filter(a=>a.alive).sort((a,b)=>b.fame-a.fame)[0];if(hero&&hero.fame>4){cam.tx=hero.x;cam.ty=hero.y;cam.tz=1.05}}}
+cam.x+=(cam.tx-cam.x)*dt*2.4;cam.y+=(cam.ty-cam.y)*dt*2.4;cam.z+=(cam.tz-cam.z)*dt*2.4}
+function drawTerrain(){if(terrainCanvas)ctx.drawImage(terrainCanvas,0,0);else{ctx.fillStyle='#355744';ctx.fillRect(0,0,WORLD.w,WORLD.h)}}
+function drawTerritory(){for(const c of clans){ctx.save();ctx.globalAlpha=.08;ctx.fillStyle=c.color;for(const b of buildings){if(b.c!==c.id||b.hp<=0)continue;ctx.beginPath();ctx.arc(b.x,b.y,b.type==='castle'?180:110,0,7);ctx.fill()}ctx.restore()}}
+function drawRoads(){ctx.save();ctx.lineCap='round';for(const c of clans){const home=buildings.find(b=>b.c===c.id&&b.type==='castle');if(!home)continue;for(const b of buildings){if(b.c!==c.id||b===home)continue;ctx.strokeStyle='rgba(54,43,30,.28)';ctx.lineWidth=8/cam.z;ctx.beginPath();ctx.moveTo(home.x,home.y);ctx.quadraticCurveTo((home.x+b.x)/2+Math.sin(b.x*.02)*30,(home.y+b.y)/2+Math.cos(b.y*.02)*30,b.x,b.y);ctx.stroke();ctx.strokeStyle='rgba(206,178,120,.32)';ctx.lineWidth=3/cam.z;ctx.stroke()}}ctx.restore()}
+function drawResource(r){ctx.save();ctx.translate(r.x,r.y);if(r.kind==='food'){ctx.fillStyle='#f3c94e';ctx.strokeStyle='#6d5420';ctx.lineWidth=1.2/cam.z;ctx.beginPath();ctx.arc(0,0,6,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#fff1a5';ctx.fillRect(-1.3,-5,2.6,10);ctx.fillRect(-5,-1.3,10,2.6)}else if(r.kind==='wood'){ctx.fillStyle='#62472e';ctx.fillRect(-2,2,4,7);ctx.fillStyle='#5ca65b';for(const q of [[0,-3],[-4,1],[4,1]]){ctx.beginPath();ctx.arc(q[0],q[1],5,0,7);ctx.fill()}}else{ctx.fillStyle='#9fa7ad';ctx.strokeStyle='#646d73';ctx.lineWidth=1/cam.z;ctx.beginPath();ctx.moveTo(-7,5);ctx.lineTo(-4,-4);ctx.lineTo(2,-7);ctx.lineTo(7,-1);ctx.lineTo(5,6);ctx.closePath();ctx.fill();ctx.stroke()}ctx.restore()}
+function drawBuilding(b){let c=clans[b.c];ctx.save();ctx.translate(b.x,b.y);let lv=b.level||1;ctx.scale(1+(lv-1)*.12,1+(lv-1)*.12);ctx.lineWidth=2.2/cam.z;ctx.strokeStyle='rgba(25,22,18,.8)';const roof=c.color;
+ if(b.type==='castle'){ctx.fillStyle='#c7b998';ctx.fillRect(-18,-12,36,25);ctx.fillRect(-23,-19,11,32);ctx.fillRect(12,-19,11,32);ctx.fillStyle=roof;ctx.fillRect(-23,-23,11,6);ctx.fillRect(12,-23,11,6);ctx.fillRect(-18,-17,36,7);ctx.strokeRect(-18,-12,36,25);ctx.fillStyle='#3a2e25';ctx.fillRect(-4,2,8,11)}
+ else if(b.type==='farm'){ctx.fillStyle='#9a7d41';ctx.fillRect(-16,-12,32,24);ctx.strokeStyle='rgba(245,220,132,.7)';for(let y=-8;y<=8;y+=5){ctx.beginPath();ctx.moveTo(-13,y);ctx.lineTo(13,y);ctx.stroke()}ctx.fillStyle=roof;ctx.fillRect(-5,-15,10,6)}
+ else if(b.type==='barracks'){ctx.fillStyle='#bba781';ctx.beginPath();ctx.moveTo(-15,10);ctx.lineTo(0,-14);ctx.lineTo(15,10);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=roof;ctx.fillRect(-2,-15,4,25)}
+ else if(b.type==='hospital'){ctx.fillStyle='#e7e2d3';ctx.fillRect(-13,-11,26,22);ctx.strokeRect(-13,-11,26,22);ctx.fillStyle='#d94949';ctx.fillRect(-3,-8,6,16);ctx.fillRect(-8,-3,16,6);ctx.fillStyle=roof;ctx.fillRect(-13,-15,26,5)}
+ else if(b.type==='watchtower'){ctx.fillStyle='#8a6b45';ctx.fillRect(-5,-13,10,26);ctx.fillRect(-12,-18,24,8);ctx.strokeRect(-12,-18,24,8);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(-14,-18);ctx.lineTo(0,-27);ctx.lineTo(14,-18);ctx.closePath();ctx.fill()}
+ else{ctx.fillStyle='#b8a784';ctx.fillRect(-10,-9,20,18);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(-12,-9);ctx.lineTo(0,-18);ctx.lineTo(12,-9);ctx.closePath();ctx.fill()}if(b.maxHp&&b.hp<b.maxHp*.75){ctx.fillStyle='rgba(20,20,20,.65)';ctx.fillRect(-15,18,30,3);ctx.fillStyle=b.hp<b.maxHp*.35?'#ff665c':'#ffd05b';ctx.fillRect(-15,18,30*clamp(b.hp/b.maxHp,0,1),3)}ctx.restore()}
+function drawAgent(a){
+ let c=clans[a.c],moving=Math.hypot(a.vx,a.vy)>.5,step=moving?Math.sin(clock*9+a.x*.045)*1.6:0;
+ ctx.save();ctx.translate(a.x,a.y);
+ // soft shadow
+ ctx.globalAlpha=.22;ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(0,11,7,3,0,0,7);ctx.fill();ctx.globalAlpha=1;
+ // legs: chunky boots rather than stick legs
+ ctx.fillStyle='#2b211d';ctx.fillRect(-5,6+step*.25,4,7);ctx.fillRect(1,6-step*.25,4,7);
+ // torso / tunic
+ ctx.fillStyle=c.color;ctx.strokeStyle='rgba(20,18,16,.92)';ctx.lineWidth=1.4/cam.z;
+ ctx.beginPath();ctx.roundRect(-6,-3,12,11,3);ctx.fill();ctx.stroke();
+ // belt
+ ctx.fillStyle='#33271f';ctx.fillRect(-6,4,12,2);
+ // arms
+ ctx.fillStyle=c.color;ctx.beginPath();ctx.roundRect(-9,-1+step*.15,4,9,2);ctx.roundRect(5,-1-step*.15,4,9,2);ctx.fill();ctx.stroke();
+ // head + hair/helmet
+ ctx.fillStyle='#e7b98d';ctx.beginPath();ctx.arc(0,-8,5.1,0,7);ctx.fill();ctx.stroke();
+ ctx.fillStyle=a.role==='guard'||a.role==='heavy'?'#68727c':a.role==='raider'?'#4b342b':a.role==='builder'?'#f2bc49':'#392a22';
+ if(a.role==='guard'||a.role==='heavy'){ctx.beginPath();ctx.arc(0,-9,5.2,Math.PI,Math.PI*2);ctx.lineTo(5,-7);ctx.lineTo(-5,-7);ctx.closePath();ctx.fill();ctx.stroke()}
+ else if(a.role==='builder'){ctx.fillRect(-6,-12,12,2.8);ctx.fillRect(-4,-14,8,2.5)}
+ else{ctx.beginPath();ctx.arc(0,-10,4.6,Math.PI,Math.PI*2);ctx.fill()}
+ // WEAPONS / TOOLS - deliberately oversized so they read on iPhone
+ ctx.lineCap='round';ctx.lineJoin='round';
+ if(a.role==='guard'||a.role==='leader'){
+   // sword
+   ctx.strokeStyle='#e8eef2';ctx.lineWidth=2.4/cam.z;ctx.beginPath();ctx.moveTo(7,1);ctx.lineTo(13,-9);ctx.stroke();
+   ctx.strokeStyle='#7e5b32';ctx.lineWidth=3/cam.z;ctx.beginPath();ctx.moveTo(6,2);ctx.lineTo(8,-1);ctx.stroke();
+   // shield
+   ctx.fillStyle=c.color;ctx.strokeStyle='#e4d7b0';ctx.lineWidth=1.4/cam.z;ctx.beginPath();ctx.arc(-8,2,5,0,7);ctx.fill();ctx.stroke();
+ }
+ if(a.role==='raider'){
+   // battle axe
+   ctx.strokeStyle='#6c4a2b';ctx.lineWidth=2.8/cam.z;ctx.beginPath();ctx.moveTo(7,5);ctx.lineTo(12,-8);ctx.stroke();
+   ctx.fillStyle='#d9e0e4';ctx.strokeStyle='#333';ctx.lineWidth=1/cam.z;ctx.beginPath();ctx.moveTo(10,-10);ctx.lineTo(16,-9);ctx.lineTo(15,-4);ctx.lineTo(11,-5);ctx.closePath();ctx.fill();ctx.stroke();
+ }
+ if(a.role==='heavy'){
+   // spear
+   ctx.strokeStyle='#765331';ctx.lineWidth=2.5/cam.z;ctx.beginPath();ctx.moveTo(7,7);ctx.lineTo(15,-13);ctx.stroke();ctx.fillStyle='#e8eef2';ctx
