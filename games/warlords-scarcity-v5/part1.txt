@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#071019">
+<title>Warlords of Snacks — Scarcity Wars v5</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#061018;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;background:#061018}
+#top{position:fixed;z-index:8;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 7px) 9px 8px;display:flex;gap:7px;align-items:center;background:linear-gradient(#07111eef,#07111edb 75%,transparent);pointer-events:none}
+.brand{font-weight:950;font-size:13px;line-height:1.02;max-width:45vw}.brand small{display:block;color:#9fb6c8;font-size:9px;margin-top:3px}
+.grow{flex:1}.stats{display:flex;gap:5px}.pill{background:#101b29dc;border:1px solid #2b4358;border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900;white-space:nowrap}
+#headline{position:fixed;z-index:7;left:50%;top:calc(env(safe-area-inset-top) + 56px);transform:translateX(-50%) translateY(-8px);opacity:0;transition:.28s;width:min(92vw,620px);padding:10px 13px;border-radius:16px;background:#0c1724e8;border:1px solid #38546c;backdrop-filter:blur(10px);text-align:center;font-size:12px;font-weight:900;pointer-events:none}
+#headline.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#focus{position:fixed;z-index:6;left:10px;top:calc(env(safe-area-inset-top) + 58px);padding:7px 10px;border-radius:999px;background:#0d1825d9;border:1px solid #2b4358;font-size:10px;font-weight:950;color:#dbeafa;pointer-events:none}
+#feed{position:fixed;z-index:5;left:9px;right:9px;bottom:calc(env(safe-area-inset-bottom) + 83px);min-height:42px;max-height:54px;overflow:hidden;border:1px solid #294158;border-radius:14px;background:#0d1723dc;backdrop-filter:blur(8px);padding:8px 10px;font-size:10px;line-height:13px;color:#dce8f2;pointer-events:none}
+#bar{position:fixed;z-index:10;left:7px;right:7px;bottom:calc(env(safe-area-inset-bottom) + 6px);height:68px;border:1px solid #2a4057;border-radius:19px;background:#0d1521f3;backdrop-filter:blur(12px);display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px}
+button{border:0;border-radius:13px;background:#f5f7fb;color:#0c1420;font-weight:950;font-size:11px;padding:6px;min-width:0}button.on{background:#cfe8ff}button.danger{background:#ffd9d5}
+.modal{position:fixed;z-index:30;inset:0;background:#0009;display:none;align-items:flex-end}.modal.open{display:flex}
+.sheet{width:100%;max-height:82%;overflow:auto;background:#f4f7fa;color:#111;border-radius:23px 23px 0 0;padding:16px 14px calc(env(safe-area-inset-bottom) + 18px)}
+.sheet h2{margin:0 0 4px;font-size:19px}.sheet p{margin:0 0 10px;color:#5a6671;font-size:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.grid button{border:1px solid #cbd3dc;background:white;padding:11px 7px;font-size:12px}
+.cards{display:grid;gap:7px}.card{background:white;border:1px solid #ced5dd;border-radius:14px;padding:9px;font-size:11px}.card b{font-size:13px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.mini{color:#687480;margin-top:3px}
+#legend{position:fixed;z-index:6;right:9px;top:calc(env(safe-area-inset-top) + 56px);display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:58vw;pointer-events:none}.leg{padding:5px 7px;border-radius:999px;background:#0d1825d9;border:1px solid #2b4358;font-size:9px;font-weight:900;color:#dbeafa}.leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:-1px}.leg .sq{border-radius:2px}.leg .tri{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:8px solid #fff;background:none;border-radius:0;margin-right:4px}
+@media(orientation:landscape){#bar{left:50%;right:auto;transform:translateX(-50%);width:min(650px,92vw)}#feed{left:auto;width:360px;bottom:calc(env(safe-area-inset-bottom) + 78px)}.brand{max-width:none}}
+#speedDock{position:fixed;z-index:9;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 76px);display:flex;gap:4px;overflow-x:auto;padding:5px;border-radius:14px;background:#0b1411e8;border:1px solid #ffffff22;backdrop-filter:blur(10px);-webkit-overflow-scrolling:touch;scrollbar-width:none}#speedDock::-webkit-scrollbar{display:none}#speedDock button{flex:0 0 auto;min-width:44px;height:36px;padding:0 9px;border-radius:10px;background:#e9e7dc;color:#162018;font-size:10px;font-weight:950}#speedDock button.on{background:#ffe17a;color:#241c05;box-shadow:0 0 0 2px #fff3b744 inset}#speedDock button.max{background:#ffd0c8}.speedPill{min-width:48px;text-align:center}#feed{bottom:calc(env(safe-area-inset-bottom) + 122px)!important}@media(orientation:landscape){#speedDock{left:50%;right:auto;transform:translateX(-50%);width:min(720px,94vw)}}
+</style></head>
+<body>
+<canvas id="world"></canvas>
+<div id="top"><div class="brand">WARLORDS OF SNACKS<small>Dad's Crazy Simulation • Scarcity Wars v5</small></div><div class="grow"></div><div class="stats"><div class="pill" id="year">Y0</div><div class="pill" id="pop">0</div><div class="pill" id="wars">0 wars</div><div class="pill speedPill" id="speedRead">1×</div></div></div>
+<div id="headline"></div>
+<div id="focus">👁 WATCH • one finger drag • two finger zoom</div><div id="legend"><span class="leg"><i style="background:#f4c84d"></i>Food</span><span class="leg"><i style="background:#63a95b"></i>Wood</span><span class="leg"><i style="background:#aab1b7"></i>Stone</span><span class="leg"><i class="tri"></i>People</span><span class="leg"><i class="sq" style="background:#d8c59d"></i>Buildings</span></div>
+<div id="feed">World booting…</div>
+<div id="bar"><button id="pause">⏸ Pause</button><button id="director" class="on">🎥 Director</button><button id="bless">🍖 Bless</button><button id="chaos" class="danger">🌀 Chaos</button><button id="more">☰ World</button></div>
+<div class="modal" id="modal"><div class="sheet"><h2>World Control</h2><p>They run themselves. You only interfere when history gets boring.</p>
+<div class="grid"><button id="meteor">☄️ Meteor</button><button id="lightning">⚡ Lightning</button><button id="quake">🌋 Quake</button><button id="storm">🌪 Storm</button><button id="feast">🍗 Feast</button><button id="forest">🌲 Grow Wood</button><button id="rebellion">🔥 Rebellion</button><button id="forcedWar">⚔️ Forced War</button><button id="peace">🤝 Peace</button><button id="hero">👑 Hero</button><button id="blessClan">✨ Bless Weakest</button><button id="curseClan">☠️ Curse Leader</button><button id="cutFood">🥀 Remove Food</button><button id="cutWood">🪓 Strip Wood</button><button id="cutStone">⛏️ Remove Stone</button><button id="burnFarms">🔥 Burn Farms</button><button id="famine">☠️ Famine Clan</button><button id="eraseArea">🕳 Erase Area</button><button id="restoreNature">🌱 Restore Regen</button><button id="save">💾 Save</button><button id="load">📂 Load</button><button id="newWorld">↻ New World</button><button id="close">Done</button></div>
+<div class="cards" id="cards"></div></div></div>
+<script>
+(()=>{'use strict';
+const C=document.getElementById('world'),ctx=C.getContext('2d',{alpha:false}),$=id=>document.getElementById(id);
+let W=innerWidth,H=innerHeight,DPR=Math.min(devicePixelRatio||1,2),last=performance.now(),paused=false,mode='watch',director=true,chaos=false,simSpeed=1,maxSpeed=false;
+const WORLD={w:2100,h:1300},CELL=55,COLS=Math.ceil(WORLD.w/CELL),ROWS=Math.ceil(WORLD.h/CELL);
+const COLORS=['#1f8cff','#ff405c','#33c96b','#ffc23f','#9b63ff','#ff8b38','#22c8c4','#ef6fbe'];
+const NAMES=['Thistle','Kraken','Eagle','Camel','Stag','Badger','Fox','Raven'],EM=['🌿','🦑','🦅','🐪','🦌','🦡','🦊','🐦‍⬛'];
+const ROLES=['worker','builder','guard','raider','medic','scout'],ROLEICON={worker:'F',builder:'B',guard:'G',raider:'R',medic:'+',scout:'S',leader:'★',heavy:'H'};
+const PERSONAL=['bold','cautious','greedy','vengeful','builder','chaotic'];
+let clans=[],agents=[],buildings=[],resources=[],fx=[],battles=[],history=[],year=0,clock=0,selected=null,headlineTimer=0,terrainCanvas=null,regen={food:1,wood:1,stone:1},cam={x:WORLD.w/2,y:WORLD.h/2,z:.55,tx:WORLD.w/2,ty:WORLD.h/2,tz:.55},drag=null,touches=new Map(),pinch=0;
+const R=(a,b)=>a+Math.random()*(b-a),ri=(a,b)=>Math.floor(R(a,b+1)),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),pick=a=>a[ri(0,a.length-1)];
+function say(msg,big=false){history.unshift({y:year,msg});history.length=70;$('feed').innerHTML=history.slice(0,3).map(h=>`<b>Y${h.y}</b> ${h.msg}`).join('<br>');if(big){$('headline').textContent=msg;$('headline').classList.add('on');headlineTimer=3.2}}
+function namePerson(){return pick(['Rab','Mags','Tam','Moira','Barry','Agnes','Gav','Soup','Pickle','Nugget','Cheddar','Frankie'])+' '+pick(['McNibble','Crunch','Batter','Crisp','Dip','Snack','Broon','McCrumb'])}
+function cellIndex(x,y){return clamp(Math.floor(y/CELL),0,ROWS-1)*COLS+clamp(Math.floor(x/CELL),0,COLS-1)}
+function spawnAgent(c,x,y,role){let a={id:('a'+Date.now().toString(36)+Math.random().toString(36).slice(2)),c,x,y,vx:0,vy:0,role:role||pick(ROLES),hp:100,age:0,hunger:R(20,55),morale:R(55,90),fame:0,name:namePerson(),goal:null,think:R(0,2),memory:{killer:null,home:c},alive:true};agents.push(a);return a}
+function addBuilding(c,x,y,type='camp'){let hp=type==='castle'?420:type==='watchtower'?220:180;buildings.push({c,x,y,type,hp,maxHp:hp,level:1,age:0,work:0})}
+function createClan(i,x,y){let c={id:i,name:NAMES[i],em:EM[i],color:COLORS[i],home:{x,y},food:110,wood:80,stone:55,morale:R(60,85),rage:R(5,25),wealth:R(20,60),trait:PERSONAL[i%PERSONAL.length],war:new Set(),allies:new Set(),relations:{},kills:0,deaths:0,territory:0,leader:null,hero:null,grudge:{},buildClock:R(5,12),dipClock:R(5,14)};clans.push(c);addBuilding(i,x,y,'castle');addBuilding(i,x+R(-70,70),y+R(-70,70),'farm');for(let n=0;n<18;n++)spawnAgent(i,x+R(-95,95),y+R(-95,95));c.leader=spawnAgent(i,x+R(-25,25),y+R(-25,25),'leader');c.leader.name='Chief '+c.leader.name;return c}
+function buildTerrain(){
+  terrainCanvas=document.createElement('canvas'); terrainCanvas.width=WORLD.w; terrainCanvas.height=WORLD.h; const g=terrainCanvas.getContext('2d');
+  const sky=g.createLinearGradient(0,0,0,WORLD.h); sky.addColorStop(0,'#314e3c'); sky.addColorStop(.5,'#3d6045'); sky.addColorStop(1,'#2e4d39'); g.fillStyle=sky; g.fillRect(0,0,WORLD.w,WORLD.h);
+  // broad fields / moorland patches
+  for(let i=0;i<46;i++){const x=R(-80,WORLD.w+80),y=R(-80,WORLD.h+80),rx=R(90,260),ry=R(55,170);g.save();g.translate(x,y);g.rotate(R(-.45,.45));g.fillStyle=i%4===0?'rgba(92,110,67,.22)':i%3===0?'rgba(55,83,59,.27)':'rgba(121,137,77,.12)';g.beginPath();g.ellipse(0,0,rx,ry,0,0,7);g.fill();g.restore()}
+  // rivers, broad dark bank then water
+  for(let r=0;r<2;r++){let sy=R(180,WORLD.h-180);g.lineCap='round';g.lineJoin='round';g.strokeStyle='rgba(20,38,34,.42)';g.lineWidth=34;g.beginPath();g.moveTo(-40,sy);for(let x=0;x<=WORLD.w+100;x+=180)g.lineTo(x,sy+Math.sin(x*.004+r*2)*R(55,95)+Math.sin(x*.011)*22);g.stroke();g.strokeStyle='#315c69';g.lineWidth=22;g.stroke();g.strokeStyle='rgba(164,211,218,.28)';g.lineWidth=3;g.stroke()}
+  // tracks
+  g.setLineDash([16,14]);g.strokeStyle='rgba(187,167,116,.34)';g.lineWidth=9;for(let i=0;i<6;i++){let y=R(90,WORLD.h-90);g.beginPath();g.moveTo(R(-100,120),y);g.bezierCurveTo(WORLD.w*.35,R(0,WORLD.h),WORLD.w*.7,R(0,WORLD.h),WORLD.w+100,R(0,WORLD.h));g.stroke()}g.setLineDash([]);
+  // tree copses + rocks as scenery, not resources
+  for(let i=0;i<250;i++){let x=R(15,WORLD.w-15),y=R(15,WORLD.h-15);if(Math.random()<.78){g.fillStyle='rgba(20,55,34,.7)';g.beginPath();g.arc(x,y,R(3,7),0,7);g.fill();g.fillStyle='rgba(59,103,55,.7)';g.beginPath();g.arc(x-2,y-2,R(2,5),0,7);g.fill()}else{g.fillStyle='rgba(120,125,117,.55)';g.beginPath();g.ellipse(x,y,R(3,8),R(2,5),R(0,3),0,7);g.fill()}}
+  // subtle vignette baked into world
+  const v=g.createRadialGradient(WORLD.w/2,WORLD.h/2,250,WORLD.w/2,WORLD.h/2,1200);v.addColorStop(0,'rgba(255,255,255,.02)');v.addColorStop(1,'rgba(0,0,0,.22)');g.fillStyle=v;g.fillRect(0,0,WORLD.w,WORLD.h)
+}
+function newWorld(){clans=[];agents=[];buildings=[];resources=[];fx=[];battles=[];history=[];year=0;clock=0;regen={food:1,wood:1,stone:1};buildTerrain();
+const pts=[[330,280],[1770,280],[330,1020],[1770,1020]];pts.forEach((p,i)=>createClan(i,p[0],p[1]));
+for(let i=0;i<150;i++)resources.push({x:R(50,WORLD.w-50),y:R(50,WORLD.h-50),kind:Math.random()<.7?'food':Math.random()<.5?'wood':'stone',n:R(8,28)});
+setWar(0,1,true,'old border feud');fit();say('Four snack kingdoms wake up hungry.',true)}
+function fit(){cam.tx=WORLD.w/2;cam.ty=WORLD.h/2;cam.tz=clamp(Math.min(W/WORLD.w,H/WORLD.h)*.96,.42,1.15);cam.x=cam.tx;cam.y=cam.ty;cam.z=cam.tz}
+function setWar(a,b,on,cause='grudge'){let A=clans[a],B=clans[b];if(!A||!B||a===b)return;if(on){if(!A.war.has(b)){A.war.add(b);B.war.add(a);A.allies.delete(b);B.allies.delete(a);A.grudge[b]=(A.grudge[b]||0)+15;B.grudge[a]=(B.grudge[a]||0)+15;say(`⚔️ ${A.name} and ${B.name} go to war — ${cause}.`,true)}}else{A.war.delete(b);B.war.delete(a)}}
+function nearestEnemy(a,range=260){let Cc=clans[a.c],best=null,bd=range*range;for(const o of agents){if(!o.alive||o.c===a.c||!Cc.war.has(o.c))continue;let dx=o.x-a.x,dy=o.y-a.y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=o}}return best}
+function nearestResource(a,kind){let best=null,bd=320*320;for(const r of resources){if(kind&&r.kind!==kind)continue;let dx=r.x-a.x,dy=r.y-a.y,d=dx*dx+dy*dy;if(d<bd&&r.n>0){bd=d;best=r}}return best}
+function nearestFriendlyBuilding(a,type){let best=null,bd=1e9;for(const b of buildings){if(b.c!==a.c||(type&&b.type!==type))continue;let d=(a.x-b.x)**2+(a.y-b.y)**2;if(d<bd){bd=d;best=b}}return best}
+function chooseGoal(a){let c=clans[a.c];a.think=R(.6,1.6);if(a.hp<45&&a.role!=='raider'){let h=nearestFriendlyBuilding(a,'hospital');if(h)return a.goa
