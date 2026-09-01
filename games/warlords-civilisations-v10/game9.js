@@ -16,3 +16,4 @@ function v115Sieges(dt){for(const c of clans){if(!c.war.size)continue;for(const 
 const updateV115=update;update=function(dt){updateV115(dt);v115Sieges(dt)};
 const drawV115=draw;draw=function(){drawV115();if(povAgent)return;ctx.save();ctx.translate(W/2,H/2);ctx.scale(cam.z,cam.z);ctx.translate(-cam.x,-cam.y);for(const b of buildings){if(!b.siege)continue;ctx.strokeStyle='#ff9b52';ctx.lineWidth=4/cam.z;ctx.setLineDash([9/cam.z,7/cam.z]);ctx.beginPath();ctx.arc(b.x,b.y,58,0,7);ctx.stroke();ctx.setLineDash([])}for(const f of siegeFx){ctx.globalAlpha=clamp(f.life,0,1);ctx.fillStyle='#ffb347';ctx.beginPath();ctx.arc(f.x,f.y,8+8*(1-f.life),0,7);ctx.fill();ctx.fillStyle='#3b312c';ctx.beginPath();ctx.arc(f.x+R(-2,2),f.y-8,5,0,7);ctx.fill()}ctx.restore()};
 document.querySelector('.brand small').textContent="Dad's Crazy Simulation • LIVING WORLD v11.5";
+const v116=document.createElement('script');v116.src='game10.js?v=20260901-116';document.body.appendChild(v116);
