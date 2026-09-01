@@ -36,7 +36,6 @@ function createGodClanAt(x,y){
   let chief=spawnAgent(id,x+R(-20,20),y+R(-20,20),'leader');chief.name='Chief '+chief.name.replace(/^Chief /,'');chief.fame=12;c.leader=chief;c.rulerDynasty=chief.dynasty||c.dynastyName;godAgentClan=id;
   if(typeof rebuildSettlements==='function')rebuildSettlements();say(`🏳️ The gods create ${c.name} from nothing.`,true);burst(x,y,color);renderClanPicks();return c
 }
-/* Route both special map modes through godTap itself so iPhone pointer handling cannot swallow them. */
 const godTapV122=godTap;
 godTap=function(sx,sy){
   let p=worldPoint(sx,sy);
@@ -44,9 +43,29 @@ godTap=function(sx,sy){
   if(mode==='godagentspawn'&&godAgentTapMode){let c=godClan();if(c){godSpawnAt(c,godAgentTapMode.role,godAgentTapMode.count,clamp(p.x,20,WORLD.w-20),clamp(p.y,20,WORLD.h-20));say(`⚡ ${godAgentTapMode.count} ${godAgentTapMode.role} appear for ${c.name}.`,true);burst(p.x,p.y,c.color)}godAgentTapMode=null;mode='watch';$('focus').textContent='👁 WATCH • tap people/buildings • drag • pinch zoom';return}
   godTapV122(sx,sy)
 };
-/* The old v11.6 pointerup handler sees watch mode after godTap now, so it becomes harmless. */
 const more=document.getElementById('more'),old=more.onclick;more.onclick=function(e){if(old)old.call(this,e);makePanel();setTimeout(renderClanPicks,0)};
 const renderCardsV122=renderCards;renderCards=function(){renderCardsV122();if($('modal').classList.contains('open')){makePanel();if(godUiLastClanCount!==clans.length)renderClanPicks()}};
 makePanel();
-document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v12.2";
+/* v12.3: synchronise picker independently of render loop and capture iPhone taps. */
+function hardSyncClanPicker(){
+  const el=document.getElementById('godPopClans');if(!el)return;
+  if(!clans.length){el.innerHTML='<span style="padding:11px;color:#687480">No clans yet — start or load a world.</span>';return}
+  const ids=clans.map(c=>c.id),shown=[...el.querySelectorAll('[data-godpick]')].map(b=>Number(b.dataset.godpick));
+  if(shown.length===ids.length&&shown.every((id,i)=>id===ids[i]))return;
+  if(!clans.some(c=>c.id===godAgentClan))godAgentClan=clans[0].id;
+  el.innerHTML='';
+  for(const c of clans){const b=document.createElement('button');b.dataset.godpick=String(c.id);b.textContent=`${c.em} ${c.name}`;b.style.cssText=`flex:0 0 auto;min-width:96px;padding:10px 9px;background:${c.color};color:#fff;border:3px solid ${c.id===godAgentClan?'#111':'transparent'}`;b.onclick=()=>{godAgentClan=c.id;el.querySelectorAll('[data-godpick]').forEach(x=>x.style.borderColor=Number(x.dataset.godpick)===godAgentClan?'#111':'transparent');let h=$('godPopHint');if(h)h.textContent=`Selected: ${c.em} ${c.name}. Choose role/count, then Spawn on Map.`};el.appendChild(b)}
+  let c=clans.find(c=>c.id===godAgentClan)||clans[0],h=$('godPopHint');if(h&&c)h.textContent=`Selected: ${c.em} ${c.name}. Choose role/count, then Spawn on Map.`;
+}
+setInterval(()=>{if($('modal')?.classList.contains('open'))hardSyncClanPicker()},200);
+more.addEventListener('click',()=>{setTimeout(hardSyncClanPicker,0);setTimeout(hardSyncClanPicker,120)});
+$('startNew')?.addEventListener('click',()=>setTimeout(hardSyncClanPicker,120));$('continueWorld')?.addEventListener('click',()=>setTimeout(hardSyncClanPicker,120));
+C.addEventListener('pointerup',e=>{
+  if(mode!=='godcreateclan'&&mode!=='godagentspawn')return;
+  const r=C.getBoundingClientRect(),p=worldPoint(e.clientX-r.left,e.clientY-r.top);
+  if(mode==='godcreateclan')createGodClanAt(clamp(p.x,80,WORLD.w-80),clamp(p.y,80,WORLD.h-80));
+  else if(godAgentTapMode){let c=godClan();if(c){godSpawnAt(c,godAgentTapMode.role,godAgentTapMode.count,clamp(p.x,20,WORLD.w-20),clamp(p.y,20,WORLD.h-20));say(`⚡ ${godAgentTapMode.count} ${godAgentTapMode.role} appear for ${c.name}.`,true);burst(p.x,p.y,c.color)}godAgentTapMode=null}
+  mode='watch';$('focus').textContent='👁 WATCH • tap people/buildings • drag • pinch zoom';
+},true);
+document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v12.3";
 })();
