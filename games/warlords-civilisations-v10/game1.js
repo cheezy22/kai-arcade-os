@@ -10,6 +10,9 @@ const NAMES=['Thistle','Kraken','Eagle','Camel','Stag','Badger','Fox','Raven'],E
 const ROLES=['worker','builder','guard','raider','medic','scout'],ROLEICON={worker:'F',builder:'B',guard:'G',raider:'R',medic:'+',scout:'S',leader:'★',heavy:'H'};
 const PERSONAL=['bold','cautious','greedy','vengeful','builder','chaotic'];
 let clans=[],agents=[],buildings=[],resources=[],fx=[],battles=[],history=[],year=0,clock=0,selected=null,headlineTimer=0,terrainCanvas=null,regen={food:1,wood:1,stone:1},cam={x:WORLD.w/2,y:WORLD.h/2,z:.55,tx:WORLD.w/2,ty:WORLD.h/2,tz:.55},drag=null,touches=new Map(),pinch=0;
+window.__wosGetClans=()=>clans;
+window.__wosGetAgents=()=>agents;
+window.__wosGetBuildings=()=>buildings;
 const R=(a,b)=>a+Math.random()*(b-a),ri=(a,b)=>Math.floor(R(a,b+1)),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),pick=a=>a[ri(0,a.length-1)];
 function say(msg,big=false){history.unshift({y:year,msg});history.length=70;$('feed').innerHTML=history.slice(0,3).map(h=>`<b>Y${h.y}</b> ${h.msg}`).join('<br>');if(big){$('headline').textContent=msg;$('headline').classList.add('on');headlineTimer=3.2}}
 function namePerson(){return pick(['Rab','Mags','Tam','Moira','Barry','Agnes','Gav','Soup','Pickle','Nugget','Cheddar','Frankie'])+' '+pick(['McNibble','Crunch','Batter','Crisp','Dip','Snack','Broon','McCrumb'])}
