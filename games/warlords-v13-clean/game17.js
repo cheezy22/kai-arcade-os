@@ -9,7 +9,6 @@
   `;
   document.head.appendChild(style);
 
-  // Landscape enters immersive every time. Portrait independently remembers its manual hide/show choice.
   let portraitHidden=false,landscapeHidden=true,lastLandscape=innerWidth>innerHeight;
   const hud=$('hudToggle');
   function isLandscape(){return innerWidth>innerHeight}
@@ -65,8 +64,8 @@
     if(!maxSpeed&&simSpeed<=20)return rawRunSimulation(realDt);
     const start=performance.now(),budget=simSpeed<=100?10:8;
     let remaining=maxSpeed?24:realDt*simSpeed;
-    const step=(maxSpeed||simSpeed>=500)?.75:simSpeed>=100?.32:.16;
-    const maxLoops=maxSpeed?24:simSpeed>=500?22:simSpeed>=100?30:45;
+    const step=(maxSpeed||simSpeed>=500)?0.75:(simSpeed>=100?0.32:0.16);
+    const maxLoops=maxSpeed?24:(simSpeed>=500?22:(simSpeed>=100?30:45));
     let loops=0;
     while(remaining>0&&loops<maxLoops&&performance.now()-start<budget){const d=Math.min(step,remaining);update(d);remaining-=d;loops++}
   };
