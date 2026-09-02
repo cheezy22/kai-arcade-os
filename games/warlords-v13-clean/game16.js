@@ -21,7 +21,6 @@
   }
   function aliveClanAgents(cid){return agents.filter(a=>a.alive&&a.c===cid)}
 
-  // Meteor: unmistakable local catastrophe, but bounded so it cannot freeze a mature phone world.
   meteor=function(x,y){
     const radius=165,inner=72;let killed=0,damaged=0,destroyed=0;
     for(const a of agents){if(!a.alive)continue;const d=Math.hypot(a.x-x,a.y-y);if(d>radius)continue;const f=1-d/radius;a.hp-=55+f*145;a.morale=Math.max(0,(a.morale||50)-35);if(d<inner||a.hp<=0){a.alive=false;killed++}else{a.vx=(a.vx||0)+(a.x-x)/Math.max(8,d)*(90+f*130);a.vy=(a.vy||0)+(a.y-y)/Math.max(8,d)*(90+f*130)}}
@@ -72,3 +71,4 @@
 
   document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v13 CLEAN R6";
 })();
+const r7=document.createElement('script');r7.src='game17.js';document.body.appendChild(r7);
