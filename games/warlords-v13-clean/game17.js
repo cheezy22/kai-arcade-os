@@ -72,3 +72,4 @@
 
   document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v13 CLEAN R7";
 })();
+const r8=document.createElement('script');r8.src='game18.js';document.body.appendChild(r8);
