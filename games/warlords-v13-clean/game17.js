@@ -58,18 +58,6 @@
     return rawAddBuilding(c,x,y,type);
   };
 
-  const rawRunSimulation=runSimulation;
-  runSimulation=function(realDt){
-    if(paused||!$('startScreen').classList.contains('hidden'))return;
-    if(!maxSpeed&&simSpeed<=20)return rawRunSimulation(realDt);
-    const start=performance.now(),budget=simSpeed<=100?10:8;
-    let remaining=maxSpeed?24:realDt*simSpeed;
-    const step=(maxSpeed||simSpeed>=500)?0.75:(simSpeed>=100?0.32:0.16);
-    const maxLoops=maxSpeed?24:(simSpeed>=500?22:(simSpeed>=100?30:45));
-    let loops=0;
-    while(remaining>0&&loops<maxLoops&&performance.now()-start<budget){const d=Math.min(step,remaining);update(d);remaining-=d;loops++}
-  };
-
   document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v13 CLEAN R7";
 })();
-const r8=document.createElement('script');r8.src='game18.js';document.body.appendChild(r8);
+const r10=document.createElement('script');r10.src='game20.js';document.body.appendChild(r10);
