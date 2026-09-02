@@ -24,20 +24,16 @@
   [...mapPlacement,...immediate].forEach(wrapGod);
   modal.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setTimeout(()=>{if(mode!=='watch'&&!['close','save','load','newWorld'].includes(b.id))modal.classList.remove('open')},0)});
 
-  // The base game was recalculating territory repeatedly for an entire half-second window.
-  // On a mature world that becomes hundreds of O(cells × clans × agents/buildings) scans.
   const rawTerritory=updateTerritory;let lastTerritory=-999;
   updateTerritory=function(){if(clock-lastTerritory<3)return;lastTerritory=clock;rawTerritory()};
 
-  // Battle detection is quadratic because nearestEnemy scans the population for every agent.
   const rawBattleDetect=battleDetect;let lastBattleDetect=-999;
   battleDetect=function(){if(clock-lastBattleDetect<.45)return;lastBattleDetect=clock;rawBattleDetect();if(battles.length>45)battles.splice(0,battles.length-45)};
 
-  // Replace road-target sorting with one linear pass. Sorting every agent's building list was a late-game hotspot.
   v115RoadTarget=function(a){let near=null,nearD=96,count=0;for(const b of buildings){if(b.hp<=0||b.c!==a.c)continue;count++;const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<nearD){nearD=d;near=b}}if(count<2||!near)return null;let next=null,nextD=240;for(const b of buildings){if(b===near||b.hp<=0||b.c!==a.c)continue;const d=Math.hypot(near.x-b.x,near.y-b.y);if(d<nextD){nextD=d;next=b}}return next&&Math.hypot(a.x-next.x,a.y-next.y)>28?next:null};
 
-  // Hard bounds for transient arrays. These are visual/history helpers, not simulation state.
   const stableUpdate=update;update=function(dt){stableUpdate(dt);if(fx.length>220)fx.splice(0,fx.length-220);if(battles.length>45)battles.splice(0,battles.length-45);if(typeof weaponFx!=='undefined'&&weaponFx.length>120)weaponFx.splice(0,weaponFx.length-120);if(typeof siegeFx!=='undefined'&&siegeFx.length>80)siegeFx.splice(0,siegeFx.length-80);if(typeof projectiles!=='undefined'&&projectiles.length>160)projectiles.splice(0,projectiles.length-160)};
 
   document.querySelector('.brand small').textContent="Dad's Crazy Simulation • FRACTURE v13 CLEAN R5";
 })();
+const r6=document.createElement('script');r6.src='game16.js';document.body.appendChild(r6);
