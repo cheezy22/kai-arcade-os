@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#070816">
+<title>Annie's Scrabble Party — Neon Word Arena</title>
+<style>
+:root{
+  --bg:#050611;--panel:rgba(13,16,38,.82);--line:rgba(139,233,255,.22);
+  --cyan:#6cf7ff;--pink:#ff66dc;--gold:#ffe66c;--violet:#8d72ff;--lime:#9cff8a;
+  --txt:#f7fbff;--muted:#aab4d6;--danger:#ff6b8b;--cell:min(5.7vw,42px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:
+radial-gradient(circle at 20% 0%,rgba(98,50,255,.24),transparent 32%),
+radial-gradient(circle at 90% 10%,rgba(0,230,255,.16),transparent 30%),
+linear-gradient(180deg,#040510,#090b1c 75%,#04050e);color:var(--txt);
+font-family:Inter,ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:
+linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:24px 24px}
+button{font:inherit;color:inherit}
+#stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:drift 10s linear infinite;opacity:.45}
+@keyframes drift{from{transform:translateY(110vh)}to{transform:translateY(-15vh)}}
+.app{position:relative;z-index:1;max-width:1240px;margin:auto;padding:max(10px,env(safe-area-inset-top)) 12px max(18px,env(safe-area-inset-bottom))}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:10px}.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;
+background:conic-gradient(from 180deg,var(--cyan),var(--violet),var(--pink),var(--cyan));box-shadow:0 0 28px rgba(108,247,255,.28);
+font-weight:1000;color:#070816;font-size:25px;border:1px solid rgba(255,255,255,.35)}
+.brand h1{font-size:clamp(18px,4vw,31px);margin:0;letter-spacing:-.04em}.brand small{color:var(--muted);display:block;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:9px}
+.pill{border:1px solid var(--line);background:rgba(8,10,28,.72);padding:8px 11px;border-radius:999px;color:var(--muted);font-size:12px;font-weight:800}
+.screen{display:none}.screen.active{display:block}
+.hero{min-height:78vh;display:grid;place-items:center}.heroCard{width:min(880px,100%);padding:28px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,rgba(20,21,53,.94),rgba(7,9,25,.92));
+box-shadow:0 25px 90px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.025)}
+.heroTitle{text-align:center;margin-bottom:24px}.heroTitle .kicker{color:var(--cyan);font-weight:900;letter-spacing:.2em;text-transform:uppercase;font-size:11px}
+.heroTitle h2{font-size:clamp(37px,9vw,76px);line-height:.92;margin:10px 0 8px;letter-spacing:-.07em;background:linear-gradient(90deg,#fff,var(--cyan),#fff,var(--pink));
+-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(108,247,255,.15))}
+.heroTitle p{color:var(--muted);margin:0 auto;max-width:620px;line-height:1.55;font-weight:650}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.mode{position:relative;overflow:hidden;text-align:left;border:1px solid var(--line);border-radius:20px;padding:18px;min-height:144px;
+background:linear-gradient(145deg,rgba(21,25,59,.82),rgba(8,10,28,.86));cursor:pointer;transition:.18s transform,.18s border-color}
+.mode:active{transform:scale(.98)}.mode:hover{border-color:rgba(108,247,255,.55);transform:translateY(-2px)}
+.mode b{display:block;font-size:18px;margin:8px 0 5px}.mode span{font-size:12px;color:var(--muted);line-height:1.4}.mode .ico{font-size:29px}
+.mode:after{content:"";position:absolute;right:-25px;bottom:-35px;width:100px;height:100px;background:var(--violet);filter:blur(55px);opacity:.25}
+.statsRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}.stat{font-size:11px;color:var(--muted);font-weight:800;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.18)}
+.gameGrid{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:13px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:19px;backdrop-filter:blur(16px);box-shadow:0 18px 45px rgba(0,0,0,.2)}
+.boardWrap{padding:10px;overflow:hidden}.hud{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 3px 10px}.playerBox{flex:1;min-width:0}
+.playerName{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.1em}.score{font-size:28px;font-weight:1000;line-height:1}.score.you{color:var(--cyan)}.score.foe{color:var(--pink)}
+.turnBox{text-align:center}.turn{font-weight:1000;font-size:12px}.subturn{color:var(--muted);font-size:10px;margin-top:2px}
+.boardScroller{overflow:auto;border-radius:13px;background:#03040c;padding:5px;touch-action:pan-x pan-y}
+.board{display:grid;grid-template-columns:repeat(15,var(--cell));grid-template-rows:repeat(15,var(--cell));gap:2px;width:max-content;margin:auto}
+.cell{position:relative;width:var(--cell);height:var(--cell);border-radius:5px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(145deg,#151a38,#0b0e22);
+display:grid;place-items:center;color:#6f7898;font-size:7px;font-weight:1000;user-select:none}.cell[data-b="tw"]{background:linear-gradient(145deg,#54203b,#251027);color:#ff7aab}.cell[data-b="dw"]{background:linear-gradient(145deg,#472d66,#1c1635);color:#d291ff}
+.cell[data-b="tl"]{background:linear-gradient(145deg,#174a59,#0c2530);color:#63eaff}.cell[data-b="dl"]{background:linear-gradient(145deg,#21495b,#102631);color:#75cfff}.cell[data-b="st"]{background:radial-gradient(circle,#ffea7b,#7a4d11);color:#160e00}
+.cell.dropHint{outline:2px solid var(--cyan);box-shadow:0 0 14px rgba(108,247,255,.55)}
+.tile{width:88%;height:88%;border-radius:7px;display:grid;place-items:center;position:relative;background:
+linear-gradient(145deg,#f5f1df,#b9b5a7);color:#121323;font-weight:1000;font-size:clamp(13px,2.8vw,21px);
+box-shadow:0 3px 0 #757267,0 0 12px rgba(255,255,255,.08);border:1px solid #fff;cursor:pointer;user-select:none}
+.tile .v{position:absolute;right:3px;bottom:1px;font-size:7px;font-weight:1000}.tile.new{background:linear-gradient(145deg,#e8feff,#84e6ef);box-shadow:0 3px 0 #3a9ca5,0 0 16px rgba(108,247,255,.5)}
+.tile.selected{outline:3px solid var(--pink);transform:translateY(-4px);box-shadow:0 6px 0 #8e4a82,0 0 18px rgba(255,102,220,.52)}
+.controls{padding:10px 2px 0}.rack{min-height:65px;display:flex;justify-content:center;gap:6px;align-items:end;padding:8px;border-radius:14px;background:linear-gradient(180deg,rgba(66,51,110,.18),rgba(0,0,0,.18));border:1px solid var(--line)}
+.rack .tile{width:48px;height:52px;flex:0 0 48px}.actionRow{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#111631;border-radius:12px;padding:11px 13px;font-weight:900;font-size:12px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,#0a8090,#5444bd);border-color:rgba(108,247,255,.4);box-shadow:0 0 18px rgba(108,247,255,.12)}.btn.danger{color:#ff8ca5}.btn:disabled{opacity:.35}
+.side{display:flex;flex-direction:column;gap:12px}.panel{padding:15px}.panel h3{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:0 0 12px}
+.meter{height:7px;background:#090b1b;border-radius:999px;overflow:hidden}.meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--pink));width:40%}
+.feed{height:168px;overflow:auto;font-size:11px;color:var(--muted);line-height:1.4}.feed p{margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.05)}.feed b{color:#fff}
+.wordPeek{font-size:26px;font-weight:1000;letter-spacing:.08em;color:var(--cyan);min-height:36px}.wordScore{color:var(--gold);font-weight:900;font-size:12px}
+.dictionarySearch{display:flex;gap:6px}.dictionarySearch input{width:100%;border:1px solid var(--line);background:#080b20;color:#fff;border-radius:10px;padding:10px;outline:none}
+.dictResult{font-size:11px;color:var(--muted);min-height:16px;margin-top:7px}.badge{display:inline-block;border:1px solid rgba(156,255,138,.3);background:rgba(156,255,138,.08);color:var(--lime);font-size:9px;border-radius:999px;padding:4px 7px;font-weight:1000}
+.overlay{position:fixed;inset:0;background:rgba(2,3,12,.78);display:none;place-items:center;z-index:50;padding:15px;backdrop-filter:blur(14px)}.overlay.show{display:grid}.modal{width:min(520px,100%);border:1px solid var(--line);border-radius:24px;background:#0d1028;padding:24px;box-shadow:0 35px 100px #000}
+.modal h2{margin:0 0 6px;font-size:30px}.modal p{color:var(--muted);line-height:1.5}.bracket{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}.match{border:1px solid var(--line);border-radius:12px;padding:10px;background:#090c20;font-size:11px}.match b{color:var(--cyan)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:90;background:#111631;border:1px solid var(--line);padding:11px 15px;border-radius:999px;font-weight:900;font-size:12px;transition:.25s;pointer-events:none;box-shadow:0 8px 30px #000}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;z-index:100;pointer-events:none;width:7px;height:12px;background:var(--cyan);animation:fall 1.6s ease-out forwards}@keyframes fall{to{transform:translate(var(--dx),100vh) rotate(900deg);opacity:0}}
+@media(max-width:850px){.gameGrid{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.feed{height:120px}:root{--cell:5.72vw}.modes{grid-template-columns:1fr}.mode{min-height:102px}.heroCard{padding:20px}.side .panel:last-child{grid-column:1/-1}}
+@media(max-width:520px){.app{padding-left:7px;padding-right:7px}.brand small{display:none}.pill{font-size:9px;padding:6px 8px}.boardWrap{padding:7px}.board{gap:1px}.cell{border-radius:3px}.rack{justify-content:flex-start;overflow-x:auto}.rack .tile{width:42px;height:48px;flex-basis:42px}.actionRow .btn{flex:1;padding:10px 7px}.side{grid-template-columns:1fr}.heroCard{border-radius:20px}.heroTitle p{font-size:13px}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><div class="logo">A</div><div><h1>Annie's Scrabble Party</h1><small>Neon Word Arena // 2088 edition</small></div></div>
+    <div class="pill" id="dictPill">Loading dictionary…</div>
+  </div>
+
+  <section id="home" class="screen active hero">
+    <div class="heroCard">
+      <div class="heroTitle">
+        <div class="kicker">The Galactic Word Cup</div>
+        <h2>Spell. Score.<br>Cause a Scene.</h2>
+        <p>A fast, touch-first futuristic word-board game with a huge supplied dictionary, solo score attacks, AI battles and Annie's absurdly prestigious tournament circuit.</p>
+      </div>
+      <div class="modes">
+        <button class="mode" onclick="startGame('solo')"><div class="ico">⚡</div><b>Single Mode</b><span>15 turns. Chase a ridiculous high score. No AI faffing about.</span></button>
+        <button class="mode" onclick="startGame('ai')"><div class="ico">🤖</div><b>Versus AI</b><span>20-turn duel against the smugly named LEX-9000.</span></button>
+        <button class="mode" onclick="startTournament()"><div class="ico">🏆</div><b>Tournament</b><span>Quarter-final → semi-final → final. Blitz matches. Eternal glory.</span></button>
+      </div>
+      <div class="statsRow">
+        <div class="stat">15×15 HOLO BOARD</div><div class="stat">TOUCH + MOUSE</div><div class="stat" id="wordStat">117K+ WORDS</div><div class="stat">LOCAL HIGH SCORES</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="gameGrid">
+      <div class="card boardWrap">
+        <div class="hud">
+          <div class="playerBox"><div class="playerName" id="p1name">ANNIE</div><div class="score you" id="p1score">0</div></div>
+          <div class="turnBox"><div class="turn" id="turnText">YOUR TURN</div><div class="subturn" id="turnSub">Turn 1 / 20</div></div>
+          <div class="playerBox" style="text-align:right"><div class="playerName" id="p2name">LEX-9000</div><div class="score foe" id="p2score">0</div></div>
+        </div>
+        <div class="boardScroller"><div id="board" class="board"></div></div>
+        <div class="controls">
+          <div id="rack" class="rack"></div>
+          <div class="actionRow">
+            <button id="playBtn" class="btn primary" onclick="commitMove()">PLAY WORD</button>
+            <button class="btn" onclick="recallTiles()">RECALL</button>
+            <button class="btn" onclick="shuffleRack()">SHUFFLE</button>
+            <button class="btn danger" onclick="passTurn()">PASS</button>
+            <button class="btn" onclick="goHome()">EXIT</button>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card panel">
+          <h3>Move Scanner</h3>
+          <div class="wordPeek" id="wordPeek">—</div>
+          <div class="wordScore" id="wordScore">Place tiles to form a word</div>
+          <div style="margin-top:10px" class="meter"><i id="bagMeter"></i></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px"><span id="bagCount">98</span> tiles remain in reactor</div>
+        </div>
+        <div class="card panel">
+          <h3>Party Dictionary</h3>
+          <div class="dictionarySearch"><input id="dictInput" placeholder="Check a word…" autocapitalize="none"><button class="btn" onclick="checkDictionary()">CHECK</button></div>
+          <div id="dictResult" class="dictResult">Supplied locally. No API required.</div>
+        </div>
+        <div class="card panel">
+          <h3>Live Transmission</h3>
+          <div id="feed" class="feed"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="overlay" class="overlay"><div id="modal" class="modal"></div></div>
+<div id="toast" class="toast"></div>
+<script src="dictionary.js"></script>
+<script>
+"use strict";
+const WORDS = window.ANNIES_WORDS || ["cat","dog","party","word","neon","quiz","qi","za"];
+const WORDSET = new Set(WORDS);
+const AIWORDS = WORDS.filter(w=>w.length>=2&&w.length<=7);
+const values={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10};
+const distro={A:9,B:2,C:2,D:4,E:12,F:2,G:3,H:2,I:9,J:1,K:1,L:4,M:2,N:6,O:8,P:2,Q:1,R:6,S:4,T:6,U:4,V:2,W:2,X:1,Y:2,Z:1};
+const bonus=[
+["tw","","","dl","","","","tw","","","","dl","","","tw"],
+["","dw","","","","tl","","","","","tl","","","dw",""],
+["","","dw","","","","dl","","dl","","","","dw","",""],
+["dl","","","dw","","","","dl","","","","dw","","","dl"],
+["","","","","dw","","","","","","dw","","","",""],
+["","tl","","","","tl","","","","tl","","","","tl",""],
+["","","dl","","","","dl","","dl","","","","dl","",""],
+["tw","","","dl","","","","st","","","","dl","","","tw"],
+["","","dl","","","","dl","","dl","","","","dl","",""],
+["","tl","","","","tl","","","","tl","","","","tl",""],
+["","","","","dw","","","","","","dw","","","",""],
+["dl","","","dw","","","","dl","","","","dw","","","dl"],
+["","","dw","","","","dl","","dl","","","","dw","",""],
+["","dw","","","","tl","","","","","tl","","","dw",""],
+["tw","","","dl","","","","tw","","","","dl","","","tw"]];
+let G={};
+let selectedRackIndex=null;
+const stars=document.getElementById("stars");
+for(let i=0;i<55;i++){let s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*10)+"s";s.style.animationDuration=(7+Math.random()*9)+"s";s.style.opacity=.15+Math.random()*.55;stars.appendChild(s)}
+document.getElementById("dictPill").textContent=WORDS.length.toLocaleString()+" WORD LEXICON";
+document.getElementById("wordStat").textContent=WORDS.length.toLocaleString()+" WORDS";
+
+function mkBag(){let a=[];for(const [l,n] of Object.entries(distro))for(let i=0;i<n;i++)a.push(l);return shuffle(a)}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function emptyBoard(){return Array.from({length:15},()=>Array.from({length:15},()=>null))}
+function draw(rack,n=7){while(rack.length<n&&G.bag.length)rack.push(G.bag.pop())}
+function startGame(mode, tournamentStage=0){
+  G={mode,stage:tournamentStage,board:emptyBoard(),bag:mkBag(),rack:[],aiRack:[],placed:[],scores:[0,0],turn:1,maxTurns:mode==="solo"?15:(mode==="tournament"?12:20),current:0,passes:0,history:[]};
+  draw(G.rack);draw(G.aiRack);
+  document.getElementById("home").classList.remove("active");document.getElementById("game").classList.add("active");
+  const opponent=mode==="tournament"?["Vocab Viper","Syntax Nova","Professor Q"][tournamentStage]:"LEX-9000";
+  document.getElementById("p1name").textContent="ANNIE";document.getElementById("p2name").textContent=mode==="solo"?"HIGH SCORE":opponent;
+  addFeed(`<b>ANNIE'S ARENA ONLINE.</b> ${mode==="solo"?"Score attack initiated.":opponent+" has entered the arena."}`);
+  render();
+}
+function startTournament(){
+ G.tourneyWins=0;
+ showModal(`<span class="badge">ANNIE'S GALACTIC CUP</span><h2>Tournament Protocol</h2><p>Three 12-turn blitz matches. Win the quarter-final, semi-final and final. Your rack survives only your dignity.</p>
+ <div class="bracket"><div class="match"><b>QF</b><br>Annie vs Vocab Viper</div><div class="match"><b>SF</b><br>Winner vs Syntax Nova</div><div class="match"><b>FINAL</b><br>Winner vs Professor Q</div><div class="match">🏆<br>Galactic Champion</div></div>
+ <button class="btn primary" onclick="closeModal();startGame('tournament',0)">ENTER QUARTER-FINAL</button>`);
+}
+function render(){
+ renderBoard();renderRack();
+ document.getElementById("p1score").textContent=G.scores[0];
+ document.getElementById("p2score").textContent=G.mode==="solo"?(+localStorage.getItem("annieHigh")||0):G.scores[1];
+ document.getElementById("turnText").textContent=G.current===0?"YOUR TURN":"AI THINKING…";
+ document.getElementById("turnSub").textContent=`Turn ${G.turn} / ${G.maxTurns}`;
+ document.getElementById("playBtn").disabled=G.current!==0;
+ document.getElementById("bagCount").textContent=G.bag.length;
+ document.getElementById("bagMeter").style.width=(G.bag.length/98*100)+"%";
+ updatePreview();
+}
+function renderBoard(){
+ const el=document.getElementById("board");el.innerHTML="";
+ for(let r=0;r<15;r++)for(let c=0;c<15;c++){
+   let d=document.createElement("div");d.className="cell";d.dataset.r=r;d.dataset.c=c;d.dataset.b=bonus[r][c];
+   if(!G.board[r][c]) d.textContent=bonus[r][c]?bonus[r][c].toUpperCase():"";
+   let tile=G.board[r][c];
+   if(tile){let t=document.createElement("div");t.className="tile"+(tile.temp?" new":"");t.innerHTML=`${tile.l}<span class="v">${values[tile.l]}</span>`;d.innerHTML="";d.appendChild(t)}
+   d.onclick=()=>cellTap(r,c);
+   d.ondragover=e=>e.preventDefault(); d.ondrop=e=>{e.preventDefault();let i=+e.dataTransfer.getData("text");placeRackTile(i,r,c)};
+   el.appendChild(d);
+ }
+}
+function renderRack(){
+ const el=document.getElementById("rack");el.innerHTML="";
+ G.rack.forEach((l,i)=>{let t=document.createElement("div");t.className="tile"+(selectedRackIndex===i?" selected":"");t.draggable=true;t.innerHTML=`${l}<span class="v">${values[l]}</span>`;
+   t.onclick=()=>{selectedRackIndex=selectedRackIndex===i?null:i;renderRack()};
+   t.ondragstart=e=>e.dataTransfer.setData("text",i);el.appendChild(t)
+ });
+}
+function cellTap(r,c){
+ if(G.current!==0)return;
+ const idx=G.placed.findIndex(p=>p.r===r&&p.c===c);
+ if(idx>=0){let p=G.placed[idx];G.rack.push(p.l);G.board[r][c]=null;G.placed.splice(idx,1);selectedRackIndex=null;render();return}
+ if(selectedRackIndex==null){toast("Tap a rack tile first");return}
+ placeRackTile(selectedRackIndex,r,c)
+}
+function placeRackTile(i,r,c){
+ if(G.board[r][c]||!G.rack[i])return;
+ const l=G.rack[i];G.rack.splice(i,1);G.board[r][c]={l,temp:true};G.placed.push({r,c,l});selectedRackIndex=null;render()
+}
+function recallTiles(){for(const p of G.placed){G.rack.push(p.l);G.board[p.r][p.c]=null}G.placed=[];selectedRackIndex=null;render()}
+function shuffleRack(){shuffle(G.rack);selectedRackIndex=null;renderRack();toast("Rack quantum-shuffled")}
+function hasPermanentTiles(){return G.board.some(row=>row.some(t=>t&&!t.temp))}
+function analyseMove(){
+ if(!G.placed.length)return {ok:false,msg:"Place at least one tile"};
+ const rows=[...new Set(G.placed.map(p=>p.r))], cols=[...new Set(G.placed.map(p=>p.c))];
+ if(rows.length>1&&cols.length>1)return {ok:false,msg:"Tiles must be in one straight line"};
+ const horiz=rows.length===1;
+ const fixed=horiz?rows[0]:cols[0], varying=G.placed.map(p=>horiz?p.c:p.r);
+ let min=Math.min(...varying),max=Math.max(...varying);
+ while(min>0&&(horiz?G.board[fixed][min-1]:G.board[min-1][fixed]))min--;
+ while(max<14&&(horiz?G.board[fixed][max+1]:G.board[max+1][fixed]))max++;
+ for(let x=min;x<=max;x++)if(!(horiz?G.board[fixed][x]:G.board[x][fixed]))return {ok:false,msg:"No gaps allowed"};
+ if(!hasPermanentTiles()){
+   if(!G.placed.some(p=>p.r===7&&p.c===7))return {ok:false,msg:"First word must cross the star"};
+ }else{
+   let connected=G.placed.some(p=>{
+     for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){let t=G.board[p.r+dr]?.[p.c+dc];if(t&&!t.temp)return true}return false
+   });
+   if(!connected)return {ok:false,msg:"Word must connect to the board"};
+ }
+ let main="",mainCells=[];
+ for(let x=min;x<=max;x++){let r=horiz?fixed:x,c=horiz?x:fixed;main+=G.board[r][c].l;mainCells.push([r,c])}
+ const formed=[{word:main,cells:mainCells}];
+ for(const p of G.placed){
+   let cross="",cells=[];let dr=horiz?1:0,dc=horiz?0:1;let r=p.r,c=p.c;
+   while(r-dr>=0&&c-dc>=0&&G.board[r-dr][c-dc]){r-=dr;c-=dc}
+   while(r<15&&c<15&&G.board[r][c]){cross+=G.board[r][c].l;cells.push([r,c]);r+=dr;c+=dc}
+   if(cross.length>1)formed.push({word:cross,cells})
+ }
+ const bad=formed.find(x=>!WORDSET.has(x.word.toLowerCase()));
+ if(bad)return {ok:false,msg:`“${bad.word}” isn't in Annie's party lexicon`,word:main};
+ let score=0;
+ for(const f of formed){let subtotal=0,wm=1;for(const [r,c] of f.cells){let t=G.board[r][c],v=values[t.l],isNew=t.temp,b=bonus[r][c];if(isNew&&b==="dl")v*=2;if(isNew&&b==="tl")v*=3;if(isNew&&b==="dw")wm*=2;if(isNew&&b==="tw")wm*=3;subtotal+=v}score+=subtotal*wm}
+ if(G.placed.length===7)score+=50;
+ return {ok:true,word:main,score,formed}
+}
+function updatePreview(){
+ let a=analyseMove(),w=document.getElementById("wordPeek"),s=document.getElementById("wordScore");
+ if(!G.placed.length){w.textContent="—";s.textContent="Place tiles to form a word";return}
+ w.textContent=(a.word||G.placed.map(x=>x.l).join("")).toUpperCase();s.textContent=a.ok?`${a.score} POINTS • VALID`:`⚠ ${a.msg}`;
+}
+function commitMove(){
+ let a=analyseMove();if(!a.ok){toast(a.msg);return}
+ G.scores[0]+=a.score;G.passes=0;G.placed.forEach(p=>G.board[p.r][p.c].temp=false);G.placed=[];
+ addFeed(`<b>ANNIE</b> deployed <b>${a.word.toUpperCase()}</b> for <b>${a.score}</b> points.`);
+ if(a.score>=40)burst();draw(G.rack);afterHumanTurn()
+}
+function passTurn(){if(G.current!==0)return;recallTiles();G.passes++;addFeed("<b>ANNIE</b> passed. A tactical retreat, obviously.");afterHumanTurn()}
+function afterHumanTurn(){
+ if(isEnd())return finishGame();
+ if(G.mode==="solo"){G.turn++;if(isEnd())finishGame();else render();return}
+ G.current=1;render();setTimeout(aiTurn,520)
+}
+function isEnd(){return G.turn>G.maxTurns || (!G.bag.length&&(!G.rack.length||!G.aiRack.length)) || G.passes>=4}
+function aiTurn(){
+ let move=findAIMove();
+ if(move){
+   for(const x of move.tiles){let idx=G.aiRack.indexOf(x.l);if(idx>=0)G.aiRack.splice(idx,1);G.board[x.r][x.c]={l:x.l,temp:false}}
+   G.scores[1]+=move.score;G.passes=0;addFeed(`<b>${document.getElementById("p2name").textContent}</b> fired back with <b>${move.word.toUpperCase()}</b> for <b>${move.score}</b>.`);
+   draw(G.aiRack)
+ }else{G.passes++;addFeed(`<b>${document.getElementById("p2name").textContent}</b> passed. Even silicon panics.`)}
+ G.turn++;G.current=0;if(isEnd())finishGame();else render()
+}
+function findAIMove(){
+ const boardHas=hasPermanentTiles(),rack=G.aiRack.slice(),candidates=[];
+ const sample=[];
+ for(let tries=0;tries<8000;tries++){let w=AIWORDS[Math.floor(Math.random()*AIWORDS.length)];if(w&&w.length<=7)sample.push(w.toUpperCase())}
+ sample.sort((a,b)=>b.length-a.length);
+ for(const word of sample){
+   for(let dir=0;dir<2;dir++){
+     const dr=dir,dc=1-dir;
+     for(let r=0;r<15;r++)for(let c=0;c<15;c++){
+       let er=r+dr*(word.length-1),ec=c+dc*(word.length-1);if(er>14||ec>14)continue;
+       let need=[],rr=[...rack],overlap=0,valid=true;
+       for(let k=0;k<word.length;k++){let R=r+dr*k,C=c+dc*k,t=G.board[R][C],l=word[k];
+         if(t){if(t.l!==l){valid=false;break}overlap++}else{let ix=rr.indexOf(l);if(ix<0){valid=false;break}rr.splice(ix,1);need.push({r:R,c:C,l})}}
+       if(!valid||!need.length)continue;
+       if(!boardHas){if(!Array.from({length:word.length},(_,k)=>[r+dr*k,c+dc*k]).some(([R,C])=>R===7&&C===7))continue}
+       else if(!overlap && !need.some(p=>[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{let t=G.board[p.r+a]?.[p.c+b];return t&&!t.temp})))continue;
+       const oldPlaced=G.placed;G.placed=[];
+       need.forEach(p=>{G.board[p.r][p.c]={l:p.l,temp:true};G.placed.push(p)});
+       let a=analyseMove();
+       need.forEach(p=>G.board[p.r][p.c]=null);G.placed=oldPlaced;
+       if(a.ok)candidates.push({word:a.word,score:a.score,tiles:need});
+       if(candidates.length>20)break;
+     } if(candidates.length>20)break;
+   } if(candidates.length>20)break;
+ }
+ candidates.sort((a,b)=>b.score-a.score);return candidates[0]||null
+}
+function finishGame(){
+ recallTiles();render();
+ let won=G.mode==="solo"||G.scores[0]>G.scores[1],tie=G.scores[0]===G.scores[1];
+ if(G.mode==="solo"){
+   let old=+localStorage.getItem("annieHigh")||0;if(G.scores[0]>old)localStorage.setItem("annieHigh",G.scores[0]);
+   showModal(`<span class="badge">SCORE ATTACK COMPLETE</span><h2>${G.scores[0]} points</h2><p>${G.scores[0]>old?"New high score. The previous record has been launched into the sun.":"High score: "+Math.max(old,G.scores[0])+"."}</p><button class="btn primary" onclick="closeModal();startGame('solo')">PLAY AGAIN</button> <button class="btn" onclick="closeModal();goHome()">MENU</button>`);if(G.scores[0]>old)burst(50);return
+ }
+ if(G.mode==="tournament"&&won&&!tie){
+   if(G.stage<2){let next=G.stage+1;showModal(`<span class="badge">ROUND WON</span><h2>${G.scores[0]}–${G.scores[1]}</h2><p>You advance to the ${next===1?"semi-final":"GALACTIC FINAL"}. Your next opponent is ${["","Syntax Nova","Professor Q"][next]}.</p><button class="btn primary" onclick="closeModal();startGame('tournament',${next})">CONTINUE</button>`);burst(35);return}
+   showModal(`<span class="badge">GALACTIC CHAMPION</span><h2>ANNIE WINS THE CUP 🏆</h2><p>${G.scores[0]}–${G.scores[1]} in the final. Across seventeen spiral arms, scholars agree this was unnecessarily magnificent.</p><button class="btn primary" onclick="closeModal();goHome()">PARADE BACK TO MENU</button>`);burst(90);return
+ }
+ showModal(`<span class="badge">${tie?"DRAW":"MATCH COMPLETE"}</span><h2>${G.scores[0]}–${G.scores[1]}</h2><p>${tie?"A draw. The galaxy remains annoyingly undecided.":won?"Annie wins. Naturally.":"Defeat. Suspiciously, the AI claims this was completely legitimate."}</p><button class="btn primary" onclick="closeModal();startGame('${G.mode}',${G.stage||0})">REMATCH</button> <button class="btn" onclick="closeModal();goHome()">MENU</button>`);if(won)burst(35)
+}
+function checkDictionary(){let w=document.getElementById("dictInput").value.trim().toLowerCase(),el=document.getElementById("dictResult");if(!w){el.textContent="Type a word first.";return}el.innerHTML=WORDSET.has(w)?`<span style="color:var(--lime)">✓ ${w.toUpperCase()} is in the party lexicon.</span>`:`<span style="color:var(--danger)">✕ ${w.toUpperCase()} isn't in this lexicon.</span>`}
+document.getElementById("dictInput").addEventListener("keydown",e=>{if(e.key==="Enter")checkDictionary()});
+function addFeed(x){let f=document.getElementById("feed"),p=document.createElement("p");p.innerHTML=x;f.prepend(p)}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>x.classList.remove("show"),1700)}
+function burst(n=26){for(let i=0;i<n;i++){let d=document.createElement("i");d.className="confetti";d.style.left=(30+Math.random()*40)+"vw";d.style.top="-15px";d.style.setProperty("--dx",(Math.random()*400-200)+"px");d.style.background=[`#6cf7ff`,`#ff66dc`,`#ffe66c`,`#9cff8a`][i%4];d.style.animationDelay=Math.random()*.25+"s";document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}}
+function showModal(x){document.getElementById("modal").innerHTML=x;document.getElementById("overlay").classList.add("show")}
+function closeModal(){document.getElementById("overlay").classList.remove("show")}
+function goHome(){document.getElementById("game").classList.remove("active");document.getElementById("home").classList.add("active");closeModal()}
+</script>
+</body>
+</html>
